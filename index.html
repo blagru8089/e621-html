@@ -1,0 +1,759 @@
+<!DOCTYPE html>
+
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>E621 Gallery</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f5f5f5;
+    --surface: #ffffff;
+    --text: #111111;
+    --text2: #666666;
+    --text3: #aaaaaa;
+    --accent: #111111;
+    --danger: #cc3333;
+    --tag-artist: #b05000;
+    --tag-copy: #7700aa;
+    --tag-species: #005599;
+    --tag-general: #336600;
+    --tag-meta: #555555;
+    --radius: 4px;
+    --gap: 12px;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-size: 14px;
+    min-height: 100vh;
+  }
+
+/* LOGIN */
+#loginPage {
+min-height: 100vh;
+display: flex; align-items: center; justify-content: center;
+padding: 20px;
+}
+.login-box {
+background: var(–surface);
+padding: 36px 32px;
+width: 100%; max-width: 380px;
+}
+.login-title { font-size: 18px; font-weight: 600; margin-bottom: 6px; }
+.login-sub { font-size: 12px; color: var(–text2); margin-bottom: 28px; line-height: 1.6; }
+.field { margin-bottom: 16px; }
+.field label {
+display: block; font-size: 12px; color: var(–text2);
+margin-bottom: 6px; font-family: ‘IBM Plex Mono’, monospace;
+}
+.field input {
+width: 100%; padding: 10px 12px; background: var(–bg);
+border: none; font-family: ‘IBM Plex Mono’, monospace;
+font-size: 13px; color: var(–text); outline: none;
+}
+.field input:focus { background: #ebebeb; }
+.btn {
+width: 100%; padding: 11px; background: var(–accent); color: #fff;
+border: none; font-family: ‘IBM Plex Sans’, sans-serif;
+font-size: 14px; font-weight: 500; cursor: pointer; margin-top: 8px;
+}
+.btn:hover { background: #333; }
+.login-error { font-size: 12px; color: var(–danger); margin-top: 10px; display: none; }
+
+/* APP */
+#appPage { display: none; }
+header {
+background: var(–surface); height: 48px;
+display: flex; align-items: center; padding: 0 16px;
+justify-content: space-between;
+position: sticky; top: 0; z-index: 100;
+}
+.logo { font-family: ‘IBM Plex Mono’, monospace; font-size: 14px; font-weight: 500; }
+.header-right { display: flex; gap: 8px; align-items: center; }
+.username-badge { font-family: ‘IBM Plex Mono’, monospace; font-size: 11px; color: var(–text2); }
+.btn-text {
+background: none; border: none; font-family: ‘IBM Plex Sans’, sans-serif;
+font-size: 12px; color: var(–text2); cursor: pointer; padding: 4px 8px;
+}
+.btn-text:hover { color: var(–text); }
+
+/* TABS */
+.tabs {
+background: var(–surface); display: flex; padding: 0 16px;
+overflow-x: auto; scrollbar-width: none; border-top: 1px solid #e8e8e8;
+}
+.tabs::-webkit-scrollbar { display: none; }
+.tab {
+padding: 10px 14px; font-size: 12px; font-weight: 500;
+color: var(–text2); cursor: pointer; white-space: nowrap;
+background: none; border: none; border-bottom: 2px solid transparent;
+font-family: ‘IBM Plex Sans’, sans-serif;
+}
+.tab:hover { color: var(–text); }
+.tab.active { color: var(–text); border-bottom-color: var(–text); }
+
+/* MAIN */
+.main { padding: 16px; max-width: 1400px; margin: 0 auto; }
+
+/* SEARCH */
+.search-row { display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; }
+.search-input {
+flex: 1; min-width: 180px; padding: 9px 12px;
+background: var(–surface); border: none; color: var(–text);
+font-family: ‘IBM Plex Mono’, monospace; font-size: 13px; outline: none;
+}
+.search-input:focus { background: #eee; }
+select.input {
+padding: 9px 10px; background: var(–surface); border: none;
+color: var(–text); font-family: ‘IBM Plex Mono’, monospace;
+font-size: 13px; cursor: pointer; outline: none;
+}
+.btn-small {
+padding: 9px 18px; background: var(–accent); color: #fff;
+border: none; font-family: ‘IBM Plex Sans’, sans-serif;
+font-size: 13px; font-weight: 500; cursor: pointer;
+}
+.btn-small:hover { background: #333; }
+
+/* FILTER */
+.filter-row { display: flex; gap: 6px; margin-bottom: 16px; flex-wrap: wrap; align-items: center; }
+.filter-label { font-size: 11px; color: var(–text3); margin-right: 2px; }
+.chip {
+padding: 4px 10px; font-size: 11px; background: var(–surface);
+color: var(–text2); cursor: pointer; border: none;
+font-family: ‘IBM Plex Mono’, monospace;
+}
+.chip:hover { color: var(–text); }
+.chip.active { background: var(–text); color: #fff; }
+.divider { width: 1px; height: 18px; background: #ddd; margin: 0 4px; }
+
+/* GRID */
+.gallery-grid {
+display: grid;
+grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+gap: var(–gap);
+}
+.post-card { background: var(–surface); cursor: pointer; position: relative; transition: opacity 0.15s; }
+.post-card:hover { opacity: 0.82; }
+.post-thumb { width: 100%; aspect-ratio: 1/1; object-fit: cover; display: block; background: #e8e8e8; }
+.post-thumb-placeholder {
+width: 100%; aspect-ratio: 1/1; display: flex; align-items: center;
+justify-content: center; background: #e8e8e8; color: var(–text3);
+font-size: 11px; font-family: ‘IBM Plex Mono’, monospace;
+}
+.post-footer { padding: 6px 8px; display: flex; justify-content: space-between; align-items: center; }
+.post-score { font-size: 11px; color: var(–text2); font-family: ‘IBM Plex Mono’, monospace; }
+.fav-btn {
+background: none; border: none; cursor: pointer;
+font-size: 11px; color: var(–text3); padding: 0;
+font-family: ‘IBM Plex Mono’, monospace;
+}
+.fav-btn:hover { color: var(–danger); }
+.viewed-mark {
+position: absolute; top: 5px; right: 5px;
+background: rgba(0,0,0,0.45); color: #fff;
+font-size: 9px; padding: 1px 5px;
+font-family: ‘IBM Plex Mono’, monospace;
+}
+.video-mark {
+position: absolute; top: 5px; left: 5px;
+background: rgba(0,0,0,0.55); color: #fff;
+font-size: 9px; padding: 1px 5px;
+font-family: ‘IBM Plex Mono’, monospace;
+}
+
+/* PAGINATION */
+.pagination { display: flex; gap: 6px; justify-content: center; margin-top: 24px; }
+.page-btn {
+padding: 7px 14px; background: var(–surface); border: none;
+color: var(–text2); font-family: ‘IBM Plex Mono’, monospace;
+font-size: 12px; cursor: pointer;
+}
+.page-btn:hover { color: var(–text); }
+.page-btn.current { background: var(–text); color: #fff; cursor: default; }
+.page-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+
+/* MODAL */
+.modal-overlay {
+position: fixed; inset: 0; z-index: 200;
+background: rgba(0,0,0,0.75);
+display: none; align-items: flex-start; justify-content: center;
+padding: 16px; overflow-y: auto;
+}
+.modal-overlay.open { display: flex; }
+.modal { background: var(–surface); width: 100%; max-width: 780px; margin: auto; animation: fadeIn 0.15s ease; }
+@keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
+.modal-media {
+background: #111; display: flex; align-items: center; justify-content: center;
+min-height: 160px; max-height: 65vh; overflow: hidden; position: relative;
+}
+.modal-img { max-width: 100%; max-height: 65vh; object-fit: contain; display: block; cursor: zoom-in; }
+.modal-video { max-width: 100%; max-height: 65vh; display: block; }
+.modal-close {
+position: absolute; top: 8px; right: 8px;
+background: rgba(0,0,0,0.6); color: #fff; border: none;
+width: 30px; height: 30px; font-size: 16px; cursor: pointer;
+display: flex; align-items: center; justify-content: center;
+font-family: ‘IBM Plex Mono’, monospace;
+}
+.modal-body { padding: 16px; }
+.modal-info { font-family: ‘IBM Plex Mono’, monospace; font-size: 12px; color: var(–text2); margin-bottom: 12px; }
+.modal-actions { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 16px; }
+.action-btn {
+padding: 6px 14px; background: var(–bg); border: none;
+color: var(–text); font-family: ‘IBM Plex Sans’, sans-serif;
+font-size: 12px; cursor: pointer;
+}
+.action-btn:hover { background: #ddd; }
+
+/* TAGS */
+.tags-section { display: flex; flex-direction: column; gap: 12px; }
+.tag-group-title {
+font-size: 10px; color: var(–text3); font-family: ‘IBM Plex Mono’, monospace;
+text-transform: uppercase; letter-spacing: 1px; margin-bottom: 5px;
+}
+.tags-wrap { display: flex; flex-wrap: wrap; gap: 5px; }
+.tag {
+padding: 2px 8px; font-size: 11px; font-family: ‘IBM Plex Mono’, monospace;
+cursor: pointer; background: var(–bg);
+}
+.tag:hover { text-decoration: underline; }
+.tag.artist { color: var(–tag-artist); }
+.tag.copyright { color: var(–tag-copy); }
+.tag.species { color: var(–tag-species); }
+.tag.general { color: var(–tag-general); }
+.tag.meta { color: var(–tag-meta); }
+
+/* RECOMMEND */
+.section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; flex-wrap: wrap; gap: 8px; }
+.section-title { font-size: 15px; font-weight: 600; }
+.section-sub { font-size: 11px; color: var(–text2); font-family: ‘IBM Plex Mono’, monospace; margin-top: 3px; }
+.pref-bar-wrap { background: var(–surface); padding: 14px 16px; margin-bottom: 16px; }
+.pref-bar-title { font-size: 11px; color: var(–text3); margin-bottom: 10px; font-family: ‘IBM Plex Mono’, monospace; text-transform: uppercase; letter-spacing: 1px; }
+.pref-row { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; }
+.pref-name { font-size: 11px; font-family: ‘IBM Plex Mono’, monospace; min-width: 120px; color: var(–text2); }
+.pref-track { flex: 1; height: 3px; background: #e0e0e0; }
+.pref-fill { height: 100%; background: var(–text); }
+.pref-count { font-size: 11px; color: var(–text3); font-family: ‘IBM Plex Mono’, monospace; min-width: 24px; text-align: right; }
+
+/* SETTINGS */
+.settings-section { margin-bottom: 24px; }
+.settings-section-title {
+font-size: 12px; font-weight: 600; text-transform: uppercase;
+letter-spacing: 1px; color: var(–text2); margin-bottom: 12px;
+font-family: ‘IBM Plex Mono’, monospace;
+}
+.settings-row { display: flex; align-items: center; justify-content: space-between; padding: 10px 0; gap: 12px; flex-wrap: wrap; }
+.settings-label { font-size: 13px; color: var(–text); }
+.settings-val { font-size: 12px; color: var(–text2); font-family: ‘IBM Plex Mono’, monospace; }
+.settings-input {
+background: var(–surface); border: none; padding: 8px 10px;
+font-family: ‘IBM Plex Mono’, monospace; font-size: 12px;
+color: var(–text); outline: none; width: 100%; max-width: 220px;
+}
+.settings-input:focus { background: #eee; }
+.btn-danger {
+padding: 7px 14px; background: transparent; color: var(–danger);
+border: none; font-family: ‘IBM Plex Sans’, sans-serif;
+font-size: 12px; cursor: pointer;
+}
+.btn-danger:hover { background: #ffeaea; }
+
+/* EMPTY / SPINNER */
+.empty-state { text-align: center; padding: 60px 20px; color: var(–text3); font-size: 13px; font-family: ‘IBM Plex Mono’, monospace; }
+.spinner { text-align: center; padding: 60px; color: var(–text3); font-size: 12px; font-family: ‘IBM Plex Mono’, monospace; }
+.spinner::before {
+content: ‘’; display: block; width: 24px; height: 24px;
+border: 2px solid #ddd; border-top-color: var(–text);
+border-radius: 50%; margin: 0 auto 12px;
+animation: spin 0.7s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* TOAST */
+.toast {
+position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+background: var(–text); color: #fff; padding: 8px 18px;
+font-size: 12px; font-family: ‘IBM Plex Mono’, monospace;
+z-index: 999; opacity: 0; transition: opacity 0.25s;
+pointer-events: none; white-space: nowrap;
+}
+.toast.show { opacity: 1; }
+
+@media (max-width: 540px) {
+.gallery-grid { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); }
+}
+</style>
+
+</head>
+<body>
+
+<!-- LOGIN -->
+
+<div id="loginPage">
+  <div class="login-box">
+    <div class="login-title">E621 Gallery</div>
+    <div class="login-sub">输入你的 e621 账号和 API Key 登录。<br>凭据仅保存在本地浏览器，不会上传到任何服务器。</div>
+    <div class="field">
+      <label>USERNAME</label>
+      <input id="loginUser" type="text" placeholder="e621 用户名" autocomplete="username" />
+    </div>
+    <div class="field">
+      <label>API KEY</label>
+      <input id="loginKey" type="password" placeholder="Account > My profile 页面生成" autocomplete="current-password" />
+    </div>
+    <div class="field" style="display:flex;align-items:center;gap:8px;margin-bottom:0">
+      <input id="loginRemember" type="checkbox" style="width:auto" />
+      <label for="loginRemember" style="margin-bottom:0;cursor:pointer">记住登录状态</label>
+    </div>
+    <button class="btn" onclick="doLogin()">登录</button>
+    <div class="login-error" id="loginError">请填写用户名和 API Key</div>
+  </div>
+</div>
+
+<!-- APP -->
+
+<div id="appPage">
+  <header>
+    <div class="logo">E621 Gallery</div>
+    <div class="header-right">
+      <span class="username-badge" id="headerUser"></span>
+      <button class="btn-text" onclick="doLogout()">退出</button>
+    </div>
+  </header>
+  <div class="tabs">
+    <button class="tab active" id="tab-browse" onclick="switchTab('browse')">浏览</button>
+    <button class="tab" id="tab-recommend" onclick="switchTab('recommend')">推荐</button>
+    <button class="tab" id="tab-favorites" onclick="switchTab('favorites')">收藏</button>
+    <button class="tab" id="tab-history" onclick="switchTab('history')">历史</button>
+    <button class="tab" id="tab-settings" onclick="switchTab('settings')">设置</button>
+  </div>
+
+  <div class="main">
+
+```
+<!-- BROWSE -->
+<div id="page-browse">
+  <div class="search-row">
+    <input class="search-input" id="searchInput" placeholder="标签搜索，如：fox solo" />
+    <select class="input" id="countSelect">
+      <option value="10">10 张</option>
+      <option value="20" selected>20 张</option>
+      <option value="40">40 张</option>
+      <option value="75">75 张</option>
+    </select>
+    <button class="btn-small" onclick="searchPosts()">搜索</button>
+  </div>
+  <div class="filter-row">
+    <span class="filter-label">评分</span>
+    <button class="chip active" data-rating="s" onclick="toggleRating(this,'s')">安全</button>
+    <button class="chip" data-rating="q" onclick="toggleRating(this,'q')">一般</button>
+    <button class="chip" data-rating="e" onclick="toggleRating(this,'e')">成人</button>
+    <div class="divider"></div>
+    <span class="filter-label">排序</span>
+    <button class="chip active" data-order="" onclick="toggleOrder(this,'')">最新</button>
+    <button class="chip" data-order="score" onclick="toggleOrder(this,'score')">高分</button>
+    <button class="chip" data-order="favcount" onclick="toggleOrder(this,'favcount')">热门</button>
+    <button class="chip" data-order="random" onclick="toggleOrder(this,'random')">随机</button>
+  </div>
+  <div id="browseGrid" class="gallery-grid"></div>
+  <div class="pagination" id="browsePagination"></div>
+</div>
+
+<!-- RECOMMEND -->
+<div id="page-recommend" style="display:none">
+  <div class="section-header">
+    <div>
+      <div class="section-title">推荐</div>
+      <div class="section-sub" id="recSub">基于收藏与浏览历史</div>
+    </div>
+    <button class="btn-small" onclick="loadRecommend()">刷新</button>
+  </div>
+  <div id="prefBarWrap"></div>
+  <div id="recommendGrid" class="gallery-grid"></div>
+</div>
+
+<!-- FAVORITES -->
+<div id="page-favorites" style="display:none">
+  <div class="section-header">
+    <div class="section-title">收藏</div>
+    <div style="display:flex;gap:6px">
+      <select class="input" id="favCountSelect">
+        <option value="10">10 张</option>
+        <option value="20" selected>20 张</option>
+        <option value="40">40 张</option>
+        <option value="75">75 张</option>
+      </select>
+      <button class="btn-small" onclick="loadFavorites()">刷新</button>
+    </div>
+  </div>
+  <div id="favGrid" class="gallery-grid"></div>
+  <div class="pagination" id="favPagination"></div>
+</div>
+
+<!-- HISTORY -->
+<div id="page-history" style="display:none">
+  <div class="section-header">
+    <div class="section-title">浏览历史</div>
+    <button class="btn-danger" onclick="clearHistory()">清空历史</button>
+  </div>
+  <div id="historyGrid" class="gallery-grid"></div>
+</div>
+
+<!-- SETTINGS -->
+<div id="page-settings" style="display:none">
+  <div class="settings-section">
+    <div class="settings-section-title">推荐设置</div>
+    <div class="settings-row">
+      <div class="settings-label">新鲜感比例</div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <input class="settings-input" id="setFresh" type="number" min="0" max="50" value="20" style="max-width:70px" />
+        <span style="font-size:12px;color:var(--text2)">% 低频 tag 混入</span>
+      </div>
+    </div>
+    <button class="btn-small" onclick="saveSettings()" style="margin-top:8px">保存</button>
+  </div>
+  <div class="settings-section">
+    <div class="settings-section-title">数据</div>
+    <div class="settings-row">
+      <div class="settings-label">浏览历史</div>
+      <div class="settings-val" id="historyCount">-</div>
+    </div>
+    <div class="settings-row">
+      <div class="settings-label">Tag 偏好条数</div>
+      <div class="settings-val" id="prefCount">-</div>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap">
+      <button class="btn-danger" onclick="clearHistory()">清空历史</button>
+      <button class="btn-danger" onclick="clearPrefs()">清空 Tag 偏好</button>
+    </div>
+  </div>
+</div>
+```
+
+  </div>
+</div>
+
+<!-- MODAL -->
+
+<div class="modal-overlay" id="modalOverlay" onclick="closeModalOutside(event)">
+  <div class="modal" id="modalBox">
+    <div class="modal-media" id="modalMedia">
+      <button class="modal-close" onclick="closeModal()">x</button>
+    </div>
+    <div class="modal-body">
+      <div class="modal-info" id="modalInfo"></div>
+      <div class="modal-actions" id="modalActions"></div>
+      <div class="tags-section" id="modalTags"></div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const PROXY = "https://e621.net";
+const UA = "E621GalleryApp/1.0 (by Blagru on e621)";
+
+let cfg = { freshRatio: 20 };
+let session = { username: '', apiKey: '' };
+let state = { currentTab: 'browse', ratings: ['s'], order: '', browsePage: 1, favPage: 1 };
+
+// ===== AUTH =====
+function doLogin() {
+  const user = document.getElementById('loginUser').value.trim();
+  const key = document.getElementById('loginKey').value.trim();
+  const err = document.getElementById('loginError');
+  if (!user || !key) { err.textContent = '请填写用户名和 API Key'; err.style.display = 'block'; return; }
+  err.style.display = 'none';
+  session = { username: user, apiKey: key };
+  if (document.getElementById('loginRemember').checked) {
+    localStorage.setItem('e621session', JSON.stringify(session));
+  }
+  startApp();
+}
+function doLogout() {
+  session = { username: '', apiKey: '' };
+  localStorage.removeItem('e621session');
+  document.getElementById('appPage').style.display = 'none';
+  document.getElementById('loginPage').style.display = 'flex';
+}
+function startApp() {
+  document.getElementById('loginPage').style.display = 'none';
+  document.getElementById('appPage').style.display = 'block';
+  document.getElementById('headerUser').textContent = session.username;
+  loadSettings();
+  searchPosts();
+}
+function tryAutoLogin() {
+  try {
+    const s = JSON.parse(localStorage.getItem('e621session') || 'null');
+    if (s?.username && s?.apiKey) {
+      session = s;
+      document.getElementById('loginUser').value = s.username;
+      document.getElementById('loginKey').value = s.apiKey;
+      document.getElementById('loginRemember').checked = true;
+      startApp();
+    }
+  } catch(e) {}
+}
+
+// ===== SETTINGS =====
+function loadSettings() {
+  try { const s = JSON.parse(localStorage.getItem('e621cfg') || '{}'); cfg.freshRatio = s.freshRatio ?? 20; document.getElementById('setFresh').value = cfg.freshRatio; } catch(e){}
+}
+function saveSettings() { cfg.freshRatio = parseInt(document.getElementById('setFresh').value)||20; localStorage.setItem('e621cfg', JSON.stringify(cfg)); showToast('设置已保存'); }
+function updateStats() { document.getElementById('historyCount').textContent = getHistory().length + ' 条'; document.getElementById('prefCount').textContent = Object.keys(getPrefs()).length + ' 条'; }
+
+// ===== STORAGE =====
+function getPrefs() { try { return JSON.parse(localStorage.getItem('e621prefs')||'{}'); } catch(e){ return {}; } }
+function addTagPrefs(tags, mult=1) { const p=getPrefs(); tags.forEach(t=>{ p[t]=(p[t]||0)+mult; }); localStorage.setItem('e621prefs', JSON.stringify(p)); }
+function clearPrefs() { localStorage.removeItem('e621prefs'); showToast('Tag 偏好已清空'); updateStats(); }
+function getHistory() { try { return JSON.parse(localStorage.getItem('e621history')||'[]'); } catch(e){ return []; } }
+function addHistory(post) {
+  let h = getHistory();
+  if (h.find(p=>p.id===post.id)) return;
+  h.unshift({ id:post.id, thumb:post.preview_url, score:post.score });
+  if (h.length>500) h=h.slice(0,500);
+  localStorage.setItem('e621history', JSON.stringify(h));
+  if (post.tags_all?.length) addTagPrefs(post.tags_all, 1);
+}
+function clearHistory() { localStorage.removeItem('e621history'); showToast('历史已清空'); updateStats(); document.getElementById('historyGrid').innerHTML='<div class="empty-state">暂无浏览历史</div>'; }
+
+// ===== API =====
+async function apiFetch(endpoint, params={}) {
+  const url = new URL(PROXY + endpoint);
+  Object.entries(params).forEach(([k,v])=>{ if(v!==undefined&&v!=='') url.searchParams.set(k,v); });
+  url.searchParams.set('login', session.username);
+  url.searchParams.set('api_key', session.apiKey);
+  url.searchParams.set('_client', UA);
+  const res = await fetch(url.toString());
+  if (!res.ok) throw new Error('HTTP ' + res.status);
+  return res.json();
+}
+async function apiPost(endpoint, bodyObj={}) {
+  const url = new URL(PROXY + endpoint);
+  const body = new URLSearchParams({ ...bodyObj, login: session.username, api_key: session.apiKey, _client: UA });
+  const res = await fetch(url.toString(), { method:'POST', headers:{'Content-Type':'application/x-www-form-urlencoded'}, body: body.toString() });
+  return res;
+}
+
+// ===== PARSE =====
+function parsePost(p) {
+  const tags=p.tags||{}, score=p.score||{};
+  return {
+    id: p.id, file_url: p.file?.url||null, file_ext: p.file?.ext||'',
+    preview_url: p.preview?.url||p.sample?.url||null,
+    sample_url: p.sample?.url||p.file?.url||null,
+    score: score.total||0, fav_count: p.fav_count||0, rating: p.rating||'s',
+    tags_artist: tags.artist||[], tags_copyright: tags.copyright||[],
+    tags_species: tags.species||[], tags_general: tags.general||[], tags_meta: tags.meta||[],
+    tags_all: [...(tags.artist||[]),...(tags.copyright||[]),...(tags.species||[]),...(tags.general||[])],
+  };
+}
+
+// ===== RENDER =====
+function renderGrid(posts, containerId) {
+  const viewed = new Set(getHistory().map(p=>p.id));
+  const el = document.getElementById(containerId);
+  if (!posts.length) { el.innerHTML='<div class="empty-state">没有找到内容</div>'; return; }
+  el.innerHTML = posts.map(p => {
+    const isVideo = ['webm','mp4'].includes(p.file_ext);
+    return `<div class="post-card" onclick="openPost(${p.id})" data-id="${p.id}">
+      ${p.preview_url ? `<img class="post-thumb" src="${p.preview_url}" loading="lazy" alt="${p.id}">` : `<div class="post-thumb-placeholder">#${p.id}</div>`}
+      ${viewed.has(p.id)?'<div class="viewed-mark">seen</div>':''}
+      ${isVideo?`<div class="video-mark">${p.file_ext}</div>`:''}
+      <div class="post-footer">
+        <span class="post-score">+${p.score}</span>
+        <button class="fav-btn" onclick="favPost(event,${p.id})">fav</button>
+      </div>
+    </div>`;
+  }).join('');
+  posts.forEach(p=>{ window._cache=window._cache||{}; window._cache[p.id]=p; });
+}
+
+// ===== SEARCH =====
+async function searchPosts(page=1) {
+  state.browsePage = page;
+  const tags = document.getElementById('searchInput').value.trim();
+  const limit = document.getElementById('countSelect').value;
+  let q = tags;
+  const rPart = state.ratings.map(r=>'rating:'+r).join(' ');
+  if (rPart) q = q ? q+' ('+rPart+')' : '('+rPart+')';
+  if (state.order) q += ' order:'+state.order;
+  document.getElementById('browseGrid').innerHTML = '<div class="spinner">加载中</div>';
+  document.getElementById('browsePagination').innerHTML = '';
+  try {
+    const data = await apiFetch('/posts.json', { tags:q, limit, page });
+    const posts = (data.posts||[]).map(parsePost);
+    renderGrid(posts, 'browseGrid');
+    renderPagination('browsePagination', page, posts.length>=parseInt(limit), p=>searchPosts(p));
+  } catch(e) {
+    document.getElementById('browseGrid').innerHTML = `<div class="empty-state">加载失败：${e.message}</div>`;
+  }
+}
+
+// ===== FILTERS =====
+function toggleRating(el, r) {
+  el.classList.toggle('active');
+  state.ratings = state.ratings.includes(r) ? state.ratings.filter(x=>x!==r) : [...state.ratings, r];
+}
+function toggleOrder(el, o) {
+  document.querySelectorAll('[data-order]').forEach(c=>c.classList.remove('active'));
+  el.classList.add('active'); state.order = o;
+}
+
+// ===== FAVORITES =====
+async function loadFavorites(page=1) {
+  state.favPage = page;
+  const limit = document.getElementById('favCountSelect').value;
+  document.getElementById('favGrid').innerHTML = '<div class="spinner">加载中</div>';
+  try {
+    const data = await apiFetch('/favorites.json', { user_id:session.username, limit, page });
+    const posts = (data.posts||[]).map(parsePost);
+    posts.forEach(p=>{ if(p.tags_all.length) addTagPrefs(p.tags_all, 2); });
+    renderGrid(posts, 'favGrid');
+    renderPagination('favPagination', page, posts.length>=parseInt(limit), p=>loadFavorites(p));
+  } catch(e) {
+    document.getElementById('favGrid').innerHTML = `<div class="empty-state">加载失败：${e.message}</div>`;
+  }
+}
+async function favPost(event, postId) {
+  event.stopPropagation();
+  try { await apiPost('/favorites.json', { post_id:postId }); showToast('已收藏'); }
+  catch(e) { showToast('收藏失败'); }
+}
+
+// ===== VOTE =====
+async function votePost(postId, score) {
+  try { await apiPost(`/posts/${postId}/votes.json`, { score, no_unvote:false }); showToast(score>0?'已点赞':'已点踩'); }
+  catch(e) { showToast('投票失败'); }
+}
+
+// ===== RECOMMEND =====
+async function loadRecommend() {
+  const prefs = getPrefs();
+  const sorted = Object.entries(prefs)
+    .filter(([t])=>!['flash','sound','video','animated','hi_res','absurd_res','digital_media_(artwork)'].includes(t))
+    .sort((a,b)=>b[1]-a[1]);
+  if (!sorted.length) {
+    document.getElementById('prefBarWrap').innerHTML='';
+    document.getElementById('recommendGrid').innerHTML='<div class="empty-state">暂无偏好数据，先去浏览或收藏一些图片</div>';
+    return;
+  }
+  renderPrefBars(sorted.slice(0,8));
+  const fresh = cfg.freshRatio/100;
+  const topN = Math.max(3, Math.round((1-fresh)*5));
+  const hotTags = sorted.slice(0,topN).map(([t])=>t);
+  const pool = sorted.slice(topN);
+  const freshTags = pool.length ? Array.from({length:Math.round(fresh*3)},()=>pool[Math.floor(Math.random()*pool.length)][0]) : [];
+  const finalTags = [...new Set([...hotTags,...freshTags])].slice(0,6);
+  document.getElementById('recSub').textContent = `基于 ${getHistory().length} 条历史 + 收藏 / ${finalTags.slice(0,3).join(', ')}...`;
+  document.getElementById('recommendGrid').innerHTML='<div class="spinner">分析中</div>';
+  try {
+    const data = await apiFetch('/posts.json', { tags:finalTags.join(' ')+' order:random', limit:20 });
+    renderGrid((data.posts||[]).map(parsePost), 'recommendGrid');
+  } catch(e) {
+    document.getElementById('recommendGrid').innerHTML=`<div class="empty-state">加载失败：${e.message}</div>`;
+  }
+}
+function renderPrefBars(sorted) {
+  if (!sorted.length) { document.getElementById('prefBarWrap').innerHTML=''; return; }
+  const max = sorted[0][1];
+  document.getElementById('prefBarWrap').innerHTML = `<div class="pref-bar-wrap"><div class="pref-bar-title">Tag 偏好</div>${sorted.map(([t,v])=>`<div class="pref-row"><div class="pref-name">${t}</div><div class="pref-track"><div class="pref-fill" style="width:${(v/max*100).toFixed(0)}%"></div></div><div class="pref-count">${v}</div></div>`).join('')}</div>`;
+}
+
+// ===== HISTORY =====
+function loadHistoryPage() {
+  const h = getHistory();
+  if (!h.length) { document.getElementById('historyGrid').innerHTML='<div class="empty-state">暂无浏览历史</div>'; return; }
+  document.getElementById('historyGrid').innerHTML = h.map(p=>`<div class="post-card" onclick="openPost(${p.id})">
+    ${p.thumb?`<img class="post-thumb" src="${p.thumb}" loading="lazy" alt="${p.id}">`:` <div class="post-thumb-placeholder">#${p.id}</div>`}
+    <div class="post-footer"><span class="post-score">+${p.score||0}</span><button class="fav-btn" onclick="favPost(event,${p.id})">fav</button></div>
+  </div>`).join('');
+}
+
+// ===== MODAL =====
+async function openPost(postId) {
+  document.getElementById('modalOverlay').classList.add('open');
+  document.getElementById('modalMedia').innerHTML='<button class="modal-close" onclick="closeModal()">x</button><div class="spinner" style="padding:30px"></div>';
+  document.getElementById('modalInfo').textContent='';
+  document.getElementById('modalActions').innerHTML='';
+  document.getElementById('modalTags').innerHTML='';
+  try {
+    let post = window._cache?.[postId];
+    if (!post) { const data=await apiFetch(`/posts/${postId}.json`); post=parsePost(data.post||data); window._cache=window._cache||{}; window._cache[postId]=post; }
+    addHistory(post);
+    const isVideo=['webm','mp4'].includes(post.file_ext);
+    const src = post.sample_url||post.file_url;
+    document.getElementById('modalMedia').innerHTML=`<button class="modal-close" onclick="closeModal()">x</button>${
+      isVideo&&post.file_url ? `<video class="modal-video" controls autoplay loop><source src="${post.file_url}" type="video/${post.file_ext}"></video>`
+      : src ? `<img class="modal-img" src="${src}" alt="${postId}" onclick="window.open('${post.file_url||src}','_blank')" onerror="this.src='${post.preview_url||''}'">` : '<div style="padding:40px;color:#888;font-size:12px;font-family:monospace">无法加载</div>'
+    }`;
+    document.getElementById('modalInfo').textContent=`#${postId}  score:${post.score}  fav:${post.fav_count}  rating:${post.rating}`;
+    document.getElementById('modalActions').innerHTML=`
+      <button class="action-btn" onclick="votePost(${postId},1)">点赞</button>
+      <button class="action-btn" onclick="votePost(${postId},-1)">点踩</button>
+      <button class="action-btn" onclick="favPost(event,${postId})">收藏</button>
+      ${post.file_url?`<button class="action-btn" onclick="window.open('${post.file_url}','_blank')">原图</button>`:''}
+      <button class="action-btn" onclick="window.open('https://e621.net/posts/${postId}','_blank')">原帖</button>`;
+    const groups=[
+      {title:'Artist', list:post.tags_artist, cls:'artist'},
+      {title:'Copyright', list:post.tags_copyright, cls:'copyright'},
+      {title:'Species', list:post.tags_species, cls:'species'},
+      {title:'General', list:post.tags_general, cls:'general'},
+      {title:'Meta', list:post.tags_meta, cls:'meta'},
+    ].filter(g=>g.list.length);
+    document.getElementById('modalTags').innerHTML=groups.map(g=>`<div><div class="tag-group-title">${g.title}</div><div class="tags-wrap">${g.list.map(t=>`<span class="tag ${g.cls}" onclick="searchByTag('${t}')">${t}</span>`).join('')}</div></div>`).join('');
+  } catch(e) {
+    document.getElementById('modalMedia').innerHTML=`<button class="modal-close" onclick="closeModal()">x</button><div style="padding:30px;color:#cc3333;font-size:12px;font-family:monospace">加载失败：${e.message}</div>`;
+  }
+}
+function searchByTag(tag) { closeModal(); switchTab('browse'); document.getElementById('searchInput').value=tag; searchPosts(); }
+function closeModal() { document.getElementById('modalOverlay').classList.remove('open'); }
+function closeModalOutside(e) { if(e.target===document.getElementById('modalOverlay')) closeModal(); }
+
+// ===== PAGINATION =====
+function renderPagination(id, current, hasNext, fn) {
+  document.getElementById(id).innerHTML=`
+    <button class="page-btn" ${current<=1?'disabled':''} onclick="(${fn})(${current-1})">上一页</button>
+    <button class="page-btn current">${current}</button>
+    <button class="page-btn" ${!hasNext?'disabled':''} onclick="(${fn})(${current+1})">下一页</button>`;
+}
+
+// ===== TABS =====
+function switchTab(tab) {
+  state.currentTab=tab;
+  ['browse','recommend','favorites','history','settings'].forEach(t=>{
+    document.getElementById('page-'+t).style.display=t===tab?'block':'none';
+    document.getElementById('tab-'+t).classList.toggle('active',t===tab);
+  });
+  if(tab==='recommend') loadRecommend();
+  if(tab==='favorites') loadFavorites();
+  if(tab==='history') loadHistoryPage();
+  if(tab==='settings') updateStats();
+}
+
+// ===== TOAST =====
+function showToast(msg) {
+  const el=document.getElementById('toast');
+  el.textContent=msg; el.classList.add('show');
+  clearTimeout(window._tt); window._tt=setTimeout(()=>el.classList.remove('show'),2000);
+}
+
+// ===== KEYBOARD =====
+document.addEventListener('keydown', e=>{
+  if(e.key==='Escape') closeModal();
+  if(e.key==='Enter'&&document.activeElement?.id==='searchInput') searchPosts();
+  if(e.key==='Enter'&&document.activeElement?.id==='loginKey') doLogin();
+});
+
+tryAutoLogin();
+</script>
+
+</body>
+</html>
