@@ -1,0 +1,1060 @@
+<!DOCTYPE html>
+
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>E621 Gallery · Blagru</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --surface: #12121a;
+    --surface2: #1a1a26;
+    --border: #2a2a3a;
+    --accent: #7c6aff;
+    --accent2: #ff6a9b;
+    --accent3: #6affd4;
+    --text: #e8e8f0;
+    --text2: #8888aa;
+    --text3: #5555777;
+    --tag-artist: #ffb347;
+    --tag-copy: #ff7eb3;
+    --tag-species: #7eb8ff;
+    --tag-general: #b8ffb8;
+    --tag-meta: #d0d0d0;
+    --radius: 12px;
+    --gap: 16px;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Mono', monospace;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+/* ===== HEADER ===== */
+header {
+position: sticky; top: 0; z-index: 100;
+background: rgba(10,10,15,0.92);
+backdrop-filter: blur(20px);
+border-bottom: 1px solid var(–border);
+padding: 0 20px;
+display: flex; align-items: center; justify-content: space-between;
+height: 58px;
+}
+.logo {
+font-family: ‘Syne’, sans-serif;
+font-weight: 800; font-size: 20px;
+background: linear-gradient(135deg, var(–accent), var(–accent2));
+-webkit-background-clip: text; -webkit-text-fill-color: transparent;
+letter-spacing: -0.5px;
+}
+.header-actions { display: flex; gap: 10px; align-items: center; }
+.btn-icon {
+background: var(–surface2); border: 1px solid var(–border);
+color: var(–text2); border-radius: 8px; padding: 7px 12px;
+font-family: ‘DM Mono’, monospace; font-size: 12px;
+cursor: pointer; transition: all 0.2s; white-space: nowrap;
+}
+.btn-icon:hover { border-color: var(–accent); color: var(–accent); }
+.btn-icon.active { border-color: var(–accent); color: var(–accent); background: rgba(124,106,255,0.1); }
+
+/* ===== NAV TABS ===== */
+.nav-tabs {
+display: flex; gap: 4px;
+padding: 12px 20px 0;
+border-bottom: 1px solid var(–border);
+overflow-x: auto; scrollbar-width: none;
+}
+.nav-tabs::-webkit-scrollbar { display: none; }
+.tab {
+padding: 8px 18px; border-radius: 8px 8px 0 0;
+font-family: ‘DM Mono’, monospace; font-size: 12px;
+cursor: pointer; white-space: nowrap;
+color: var(–text2); border: 1px solid transparent;
+border-bottom: none; transition: all 0.2s;
+background: transparent;
+}
+.tab:hover { color: var(–text); background: var(–surface2); }
+.tab.active {
+color: var(–text); background: var(–surface);
+border-color: var(–border); border-bottom-color: var(–surface);
+margin-bottom: -1px; z-index: 1;
+}
+
+/* ===== MAIN LAYOUT ===== */
+.main { padding: 20px; max-width: 1400px; margin: 0 auto; }
+
+/* ===== SEARCH BAR ===== */
+.search-row {
+display: flex; gap: 10px; margin-bottom: 16px;
+flex-wrap: wrap; align-items: center;
+}
+.search-wrap {
+flex: 1; min-width: 200px;
+position: relative;
+}
+.search-input {
+width: 100%; background: var(–surface2);
+border: 1px solid var(–border); color: var(–text);
+border-radius: var(–radius); padding: 10px 16px;
+font-family: ‘DM Mono’, monospace; font-size: 13px;
+outline: none; transition: border-color 0.2s;
+}
+.search-input:focus { border-color: var(–accent); }
+.search-input::placeholder { color: var(–text3); }
+.count-select {
+background: var(–surface2); border: 1px solid var(–border);
+color: var(–text); border-radius: var(–radius);
+padding: 10px 14px; font-family: ‘DM Mono’, monospace;
+font-size: 13px; cursor: pointer; outline: none;
+}
+.btn-primary {
+background: linear-gradient(135deg, var(–accent), #5a4aff);
+color: #fff; border: none; border-radius: var(–radius);
+padding: 10px 20px; font-family: ‘Syne’, sans-serif;
+font-weight: 700; font-size: 13px; cursor: pointer;
+transition: opacity 0.2s, transform 0.1s;
+}
+.btn-primary:hover { opacity: 0.9; }
+.btn-primary:active { transform: scale(0.97); }
+
+/* ===== FILTER CHIPS ===== */
+.filter-row {
+display: flex; gap: 8px; margin-bottom: 20px;
+flex-wrap: wrap; align-items: center;
+}
+.chip {
+padding: 5px 12px; border-radius: 20px;
+font-size: 11px; cursor: pointer;
+border: 1px solid var(–border); color: var(–text2);
+background: var(–surface2); transition: all 0.2s;
+}
+.chip:hover { border-color: var(–accent); color: var(–accent); }
+.chip.active { border-color: var(–accent); color: var(–accent); background: rgba(124,106,255,0.15); }
+.chip-label { color: var(–text3); font-size: 11px; align-self: center; }
+
+/* ===== GALLERY GRID ===== */
+.gallery-grid {
+display: grid;
+grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+gap: var(–gap);
+}
+.post-card {
+background: var(–surface);
+border: 1px solid var(–border);
+border-radius: var(–radius);
+overflow: hidden; cursor: pointer;
+transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s;
+position: relative;
+}
+.post-card:hover {
+transform: translateY(-3px);
+border-color: var(–accent);
+box-shadow: 0 8px 30px rgba(124,106,255,0.2);
+}
+.post-thumb {
+width: 100%; aspect-ratio: 1/1;
+object-fit: cover; display: block;
+background: var(–surface2);
+}
+.post-thumb-placeholder {
+width: 100%; aspect-ratio: 1/1;
+display: flex; align-items: center; justify-content: center;
+background: var(–surface2); color: var(–text3);
+font-size: 11px; text-align: center; padding: 10px;
+}
+.post-meta {
+padding: 8px 10px;
+display: flex; justify-content: space-between; align-items: center;
+}
+.post-score {
+font-size: 11px; color: var(–accent3);
+}
+.post-fav-btn {
+background: none; border: none; cursor: pointer;
+font-size: 16px; transition: transform 0.2s;
+line-height: 1;
+}
+.post-fav-btn:hover { transform: scale(1.3); }
+.post-card.viewed::after {
+content: ‘✓’;
+position: absolute; top: 6px; right: 6px;
+background: rgba(106,255,212,0.8); color: #000;
+border-radius: 50%; width: 20px; height: 20px;
+display: flex; align-items: center; justify-content: center;
+font-size: 11px; font-weight: bold;
+}
+
+/* ===== MODAL ===== */
+.modal-overlay {
+position: fixed; inset: 0; z-index: 200;
+background: rgba(0,0,0,0.88);
+backdrop-filter: blur(8px);
+display: none; align-items: flex-start;
+justify-content: center;
+padding: 20px; overflow-y: auto;
+}
+.modal-overlay.open { display: flex; }
+.modal {
+background: var(–surface);
+border: 1px solid var(–border);
+border-radius: 16px;
+width: 100%; max-width: 820px;
+margin: auto;
+animation: modalIn 0.25s ease;
+overflow: hidden;
+}
+@keyframes modalIn {
+from { opacity:0; transform: scale(0.95) translateY(10px); }
+to { opacity:1; transform: scale(1) translateY(0); }
+}
+.modal-img-wrap {
+position: relative;
+background: #000;
+display: flex; align-items: center; justify-content: center;
+min-height: 200px; max-height: 70vh;
+overflow: hidden;
+}
+.modal-img {
+max-width: 100%; max-height: 70vh;
+object-fit: contain; display: block;
+}
+.modal-close {
+position: absolute; top: 12px; right: 12px;
+background: rgba(0,0,0,0.7); border: 1px solid var(–border);
+color: var(–text); border-radius: 8px;
+width: 36px; height: 36px; font-size: 18px;
+cursor: pointer; display: flex; align-items: center; justify-content: center;
+transition: background 0.2s;
+}
+.modal-close:hover { background: rgba(255,100,100,0.3); }
+.modal-body { padding: 20px; }
+.modal-title {
+font-family: ‘Syne’, sans-serif; font-weight: 700;
+font-size: 16px; margin-bottom: 14px;
+color: var(–text);
+}
+.modal-actions {
+display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap;
+}
+.btn-sm {
+padding: 7px 14px; border-radius: 8px; font-size: 12px;
+font-family: ‘DM Mono’, monospace; cursor: pointer;
+border: 1px solid var(–border); background: var(–surface2);
+color: var(–text2); transition: all 0.2s;
+}
+.btn-sm:hover { border-color: var(–accent); color: var(–accent); }
+.btn-sm.fav { border-color: var(–accent2); color: var(–accent2); }
+.btn-sm.fav:hover { background: rgba(255,106,155,0.15); }
+
+/* ===== TAGS ===== */
+.tags-section { margin-top: 8px; }
+.tags-group { margin-bottom: 14px; }
+.tags-group-title {
+font-size: 10px; color: var(–text3);
+text-transform: uppercase; letter-spacing: 1.5px;
+margin-bottom: 7px;
+}
+.tags-wrap { display: flex; flex-wrap: wrap; gap: 6px; }
+.tag {
+padding: 3px 10px; border-radius: 20px;
+font-size: 11px; cursor: pointer;
+transition: opacity 0.2s;
+}
+.tag:hover { opacity: 0.7; }
+.tag.artist { background: rgba(255,179,71,0.15); color: var(–tag-artist); border: 1px solid rgba(255,179,71,0.3); }
+.tag.copyright { background: rgba(255,126,179,0.15); color: var(–tag-copy); border: 1px solid rgba(255,126,179,0.3); }
+.tag.species { background: rgba(126,184,255,0.15); color: var(–tag-species); border: 1px solid rgba(126,184,255,0.3); }
+.tag.general { background: rgba(184,255,184,0.12); color: var(–tag-general); border: 1px solid rgba(184,255,184,0.25); }
+.tag.meta { background: rgba(200,200,200,0.1); color: var(–tag-meta); border: 1px solid rgba(200,200,200,0.2); }
+
+/* ===== RECOMMEND SECTION ===== */
+.rec-header {
+display: flex; align-items: center; gap: 12px;
+margin-bottom: 16px; flex-wrap: wrap;
+}
+.rec-title {
+font-family: ‘Syne’, sans-serif; font-weight: 800;
+font-size: 18px;
+}
+.rec-badge {
+font-size: 11px; padding: 3px 10px; border-radius: 20px;
+border: 1px solid var(–accent); color: var(–accent);
+}
+.top-tags-wrap {
+background: var(–surface2); border: 1px solid var(–border);
+border-radius: var(–radius); padding: 14px 16px;
+margin-bottom: 20px;
+}
+.top-tags-title {
+font-size: 11px; color: var(–text3);
+text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 10px;
+}
+.tag-bar-row {
+display: flex; align-items: center; gap: 10px;
+margin-bottom: 7px;
+}
+.tag-bar-name { font-size: 12px; color: var(–text2); min-width: 120px; }
+.tag-bar-track {
+flex: 1; height: 5px; background: var(–border); border-radius: 3px; overflow: hidden;
+}
+.tag-bar-fill {
+height: 100%; border-radius: 3px;
+background: linear-gradient(90deg, var(–accent), var(–accent2));
+}
+.tag-bar-count { font-size: 11px; color: var(–text3); min-width: 28px; text-align: right; }
+
+/* ===== FAVORITES PAGE ===== */
+.page-title {
+font-family: ‘Syne’, sans-serif; font-weight: 800;
+font-size: 22px; margin-bottom: 20px;
+}
+.page-title span {
+background: linear-gradient(135deg, var(–accent2), var(–accent));
+-webkit-background-clip: text; -webkit-text-fill-color: transparent;
+}
+
+/* ===== SETTINGS ===== */
+.settings-card {
+background: var(–surface2); border: 1px solid var(–border);
+border-radius: var(–radius); padding: 20px; margin-bottom: 16px;
+}
+.settings-title {
+font-family: ‘Syne’, sans-serif; font-weight: 700;
+font-size: 14px; margin-bottom: 14px; color: var(–text);
+}
+.settings-row {
+display: flex; align-items: center; justify-content: space-between;
+margin-bottom: 12px; gap: 10px; flex-wrap: wrap;
+}
+.settings-label { font-size: 13px; color: var(–text2); }
+.settings-input {
+background: var(–surface); border: 1px solid var(–border);
+color: var(–text); border-radius: 8px; padding: 7px 12px;
+font-family: ‘DM Mono’, monospace; font-size: 12px; outline: none;
+transition: border-color 0.2s; flex: 1; min-width: 140px;
+}
+.settings-input:focus { border-color: var(–accent); }
+.btn-danger {
+background: rgba(255,80,80,0.1); border: 1px solid rgba(255,80,80,0.3);
+color: #ff6060; border-radius: 8px; padding: 8px 16px;
+font-family: ‘DM Mono’, monospace; font-size: 12px; cursor: pointer;
+transition: all 0.2s;
+}
+.btn-danger:hover { background: rgba(255,80,80,0.2); }
+
+/* ===== EMPTY / LOADING ===== */
+.empty-state {
+text-align: center; padding: 60px 20px; color: var(–text3);
+}
+.empty-icon { font-size: 48px; margin-bottom: 14px; }
+.empty-text { font-size: 14px; }
+.spinner {
+text-align: center; padding: 60px;
+color: var(–accent); font-size: 13px;
+}
+.spinner::before {
+content: ‘’; display: block; width: 36px; height: 36px;
+border: 3px solid var(–border); border-top-color: var(–accent);
+border-radius: 50%; margin: 0 auto 16px;
+animation: spin 0.8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ===== TOAST ===== */
+.toast {
+position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+background: var(–surface2); border: 1px solid var(–border);
+color: var(–text); padding: 10px 20px; border-radius: 20px;
+font-size: 13px; z-index: 999; opacity: 0;
+transition: opacity 0.3s; pointer-events: none;
+white-space: nowrap;
+}
+.toast.show { opacity: 1; }
+
+/* ===== PAGINATION ===== */
+.pagination {
+display: flex; gap: 8px; justify-content: center;
+margin-top: 28px; flex-wrap: wrap;
+}
+.page-btn {
+padding: 8px 16px; border-radius: 8px; border: 1px solid var(–border);
+background: var(–surface2); color: var(–text2);
+font-family: ‘DM Mono’, monospace; font-size: 12px; cursor: pointer;
+transition: all 0.2s;
+}
+.page-btn:hover { border-color: var(–accent); color: var(–accent); }
+.page-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+
+/* ===== VIDEO ===== */
+.modal-video { max-width: 100%; max-height: 70vh; display: block; }
+
+/* ===== SCROLLBAR ===== */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: var(–bg); }
+::-webkit-scrollbar-thumb { background: var(–border); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(–accent); }
+
+@media (max-width: 600px) {
+.gallery-grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
+.search-row { flex-direction: column; }
+.search-wrap { width: 100%; }
+}
+</style>
+
+</head>
+<body>
+
+<header>
+  <div class="logo">E621 · Blagru</div>
+  <div class="header-actions">
+    <button class="btn-icon" id="themeBtn" onclick="cycleTheme()">🎨</button>
+    <button class="btn-icon" onclick="switchTab('settings')">⚙️</button>
+  </div>
+</header>
+
+<div class="nav-tabs">
+  <div class="tab active" id="tab-browse" onclick="switchTab('browse')">🔍 浏览</div>
+  <div class="tab" id="tab-recommend" onclick="switchTab('recommend')">✨ 推荐</div>
+  <div class="tab" id="tab-favorites" onclick="switchTab('favorites')">❤️ 收藏</div>
+  <div class="tab" id="tab-history" onclick="switchTab('history')">👁️ 历史</div>
+  <div class="tab" id="tab-settings" onclick="switchTab('settings')">⚙️ 设置</div>
+</div>
+
+<div class="main">
+
+  <!-- ===== BROWSE ===== -->
+
+  <div id="page-browse">
+    <div class="search-row">
+      <div class="search-wrap">
+        <input class="search-input" id="searchInput" placeholder="输入标签搜索，例如：fox solo rating:s" />
+      </div>
+      <select class="count-select" id="countSelect">
+        <option value="10">10张</option>
+        <option value="20" selected>20张</option>
+        <option value="40">40张</option>
+        <option value="75">75张</option>
+      </select>
+      <button class="btn-primary" onclick="searchPosts()">搜索</button>
+    </div>
+    <div class="filter-row">
+      <span class="chip-label">评分：</span>
+      <div class="chip active" onclick="toggleRating(this,'s')">安全</div>
+      <div class="chip" onclick="toggleRating(this,'q')">一般</div>
+      <div class="chip" onclick="toggleRating(this,'e')">成人</div>
+      <span class="chip-label" style="margin-left:8px">排序：</span>
+      <div class="chip active" onclick="toggleOrder(this,'')">最新</div>
+      <div class="chip" onclick="toggleOrder(this,'score')">高分</div>
+      <div class="chip" onclick="toggleOrder(this,'favcount')">热门</div>
+      <div class="chip" onclick="toggleOrder(this,'random')">随机</div>
+    </div>
+    <div id="browseGrid" class="gallery-grid"></div>
+    <div class="pagination" id="browsePagination"></div>
+  </div>
+
+  <!-- ===== RECOMMEND ===== -->
+
+  <div id="page-recommend" style="display:none">
+    <div class="rec-header">
+      <div class="rec-title">为你推荐</div>
+      <div class="rec-badge" id="recBadge">基于收藏+浏览</div>
+      <button class="btn-primary" onclick="loadRecommend()" style="margin-left:auto">刷新推荐</button>
+    </div>
+    <div id="topTagsWrap"></div>
+    <div id="recommendGrid" class="gallery-grid"></div>
+  </div>
+
+  <!-- ===== FAVORITES ===== -->
+
+  <div id="page-favorites" style="display:none">
+    <div class="page-title"><span>❤️ 我的收藏</span></div>
+    <div class="search-row">
+      <select class="count-select" id="favCountSelect">
+        <option value="10">10张</option>
+        <option value="20" selected>20张</option>
+        <option value="40">40张</option>
+        <option value="75">75张</option>
+      </select>
+      <button class="btn-primary" onclick="loadFavorites()">刷新</button>
+    </div>
+    <div id="favGrid" class="gallery-grid"></div>
+    <div class="pagination" id="favPagination"></div>
+  </div>
+
+  <!-- ===== HISTORY ===== -->
+
+  <div id="page-history" style="display:none">
+    <div class="page-title"><span>👁️ 浏览历史</span></div>
+    <div style="display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap">
+      <button class="btn-danger" onclick="clearHistory()">清空历史</button>
+    </div>
+    <div id="historyGrid" class="gallery-grid"></div>
+  </div>
+
+  <!-- ===== SETTINGS ===== -->
+
+  <div id="page-settings" style="display:none">
+    <div class="page-title"><span>⚙️ 设置</span></div>
+    <div class="settings-card">
+      <div class="settings-title">账号配置</div>
+      <div class="settings-row">
+        <div class="settings-label">用户名</div>
+        <input class="settings-input" id="setUser" placeholder="e621 用户名" />
+      </div>
+      <div class="settings-row">
+        <div class="settings-label">API Key</div>
+        <input class="settings-input" id="setKey" type="password" placeholder="API Key" />
+      </div>
+      <button class="btn-primary" onclick="saveSettings()">保存设置</button>
+    </div>
+    <div class="settings-card">
+      <div class="settings-title">推荐设置</div>
+      <div class="settings-row">
+        <div class="settings-label">新鲜感比例 (0~50%)</div>
+        <input class="settings-input" id="setFresh" type="number" min="0" max="50" value="20" style="max-width:80px" />
+        <span style="font-size:12px;color:var(--text3)">% 低频tag混入</span>
+      </div>
+    </div>
+    <div class="settings-card">
+      <div class="settings-title">数据管理</div>
+      <div class="settings-row">
+        <div class="settings-label">历史记录数量</div>
+        <div style="font-size:13px;color:var(--accent)" id="historyCount">-</div>
+      </div>
+      <div class="settings-row">
+        <div class="settings-label">Tag偏好数量</div>
+        <div style="font-size:13px;color:var(--accent)" id="prefCount">-</div>
+      </div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:4px">
+        <button class="btn-danger" onclick="clearHistory()">清空历史</button>
+        <button class="btn-danger" onclick="clearPrefs()">清空Tag偏好</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ===== MODAL ===== -->
+
+<div class="modal-overlay" id="modalOverlay" onclick="closeModalOutside(event)">
+  <div class="modal" id="modalBox">
+    <div class="modal-img-wrap" id="modalImgWrap">
+      <button class="modal-close" onclick="closeModal()">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="modal-title" id="modalTitle">Post #</div>
+      <div class="modal-actions" id="modalActions"></div>
+      <div class="tags-section" id="modalTags"></div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ===== CONFIG & STATE =====
+const PROXY = "https://e621.net";
+const UA = "E621GalleryApp/1.0 (by Blagru on e621)";
+
+let cfg = {
+  username: "Blagru",
+  apiKey: "cuPuCJTpW5ro782Yj3WCSLDU",
+  freshRatio: 20
+};
+
+let state = {
+  currentPage: 1,
+  currentTab: 'browse',
+  lastSearch: '',
+  ratings: ['s'],
+  order: '',
+  favPage: 1,
+  browsePosts: [],
+  favPosts: [],
+};
+
+// ===== LOCAL STORAGE =====
+function loadStorage() {
+  try {
+    const saved = localStorage.getItem('e621cfg');
+    if (saved) cfg = {...cfg, ...JSON.parse(saved)};
+    document.getElementById('setUser').value = cfg.username;
+    document.getElementById('setKey').value = cfg.apiKey;
+    document.getElementById('setFresh').value = cfg.freshRatio;
+  } catch(e){}
+}
+function saveSettings() {
+  cfg.username = document.getElementById('setUser').value.trim();
+  cfg.apiKey = document.getElementById('setKey').value.trim();
+  cfg.freshRatio = parseInt(document.getElementById('setFresh').value) || 20;
+  localStorage.setItem('e621cfg', JSON.stringify(cfg));
+  showToast('✅ 设置已保存');
+}
+
+// Tag prefs: { tagName: count }
+function getPrefs() {
+  try { return JSON.parse(localStorage.getItem('e621prefs') || '{}'); } catch(e){ return {}; }
+}
+function addTagPrefs(tags) {
+  const p = getPrefs();
+  tags.forEach(t => { p[t] = (p[t]||0) + 1; });
+  localStorage.setItem('e621prefs', JSON.stringify(p));
+}
+function clearPrefs() {
+  localStorage.removeItem('e621prefs');
+  showToast('🗑️ Tag偏好已清空');
+  updateSettingsStats();
+}
+
+// History: array of post objects (lightweight)
+function getHistory() {
+  try { return JSON.parse(localStorage.getItem('e621history') || '[]'); } catch(e){ return []; }
+}
+function addHistory(post) {
+  let h = getHistory();
+  if (h.find(p => p.id === post.id)) return;
+  h.unshift({ id: post.id, thumb: post.preview_url, score: post.score, tags_all: post.tags_all });
+  if (h.length > 500) h = h.slice(0, 500);
+  localStorage.setItem('e621history', JSON.stringify(h));
+  // also update prefs
+  if (post.tags_all) addTagPrefs(post.tags_all);
+}
+function clearHistory() {
+  localStorage.removeItem('e621history');
+  showToast('🗑️ 历史已清空');
+  updateSettingsStats();
+  document.getElementById('historyGrid').innerHTML = '<div class="empty-state"><div class="empty-icon">📭</div><div class="empty-text">暂无浏览历史</div></div>';
+}
+function updateSettingsStats() {
+  document.getElementById('historyCount').textContent = getHistory().length;
+  document.getElementById('prefCount').textContent = Object.keys(getPrefs()).length;
+}
+
+// ===== API =====
+function authParams() {
+  return `login=${encodeURIComponent(cfg.username)}&api_key=${encodeURIComponent(cfg.apiKey)}&_client=${encodeURIComponent(UA)}`;
+}
+async function apiFetch(endpoint, params={}) {
+  const url = new URL(PROXY + endpoint);
+  Object.entries(params).forEach(([k,v]) => { if(v!==undefined && v!=='') url.searchParams.set(k, v); });
+  url.searchParams.set('login', cfg.username);
+  url.searchParams.set('api_key', cfg.apiKey);
+  url.searchParams.set('_client', UA);
+  const res = await fetch(url.toString());
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  return res.json();
+}
+
+// ===== POST PARSING =====
+function parsePost(p) {
+  const file = p.file || {};
+  const preview = p.preview || {};
+  const sample = p.sample || {};
+  const tags = p.tags || {};
+  const score = p.score || {};
+  return {
+    id: p.id,
+    file_url: file.url || null,
+    file_ext: file.ext || '',
+    preview_url: preview.url || sample.url || null,
+    sample_url: sample.url || file.url || null,
+    score: score.total || 0,
+    fav_count: p.fav_count || 0,
+    rating: p.rating || 's',
+    sources: p.sources || [],
+    tags_artist: tags.artist || [],
+    tags_copyright: tags.copyright || [],
+    tags_species: tags.species || [],
+    tags_general: tags.general || [],
+    tags_meta: tags.meta || [],
+    tags_all: [
+      ...(tags.artist||[]),
+      ...(tags.copyright||[]),
+      ...(tags.species||[]),
+      ...(tags.general||[]),
+    ],
+    description: p.description || '',
+    created_at: p.created_at || '',
+    pools: p.pools || [],
+  };
+}
+
+// ===== RENDER GRID =====
+function getViewedIds() {
+  return new Set(getHistory().map(p => p.id));
+}
+
+function renderGrid(posts, containerId) {
+  const viewed = getViewedIds();
+  const container = document.getElementById(containerId);
+  if (!posts.length) {
+    container.innerHTML = '<div class="empty-state"><div class="empty-icon">🖼️</div><div class="empty-text">没有找到内容</div></div>';
+    return;
+  }
+  container.innerHTML = posts.map(p => {
+    const isViewed = viewed.has(p.id);
+    const isVideo = ['webm','mp4'].includes(p.file_ext);
+    const thumb = p.preview_url || p.sample_url;
+    return `
+      <div class="post-card ${isViewed?'viewed':''}" onclick="openPost(${p.id})" data-id="${p.id}">
+        ${thumb
+          ? `<img class="post-thumb" src="${thumb}" loading="lazy" alt="post ${p.id}" onerror="this.parentNode.querySelector('.post-thumb-placeholder')&&(this.style.display='none')">`
+          : `<div class="post-thumb-placeholder">🖼️<br>#${p.id}</div>`
+        }
+        ${isVideo ? `<div style="position:absolute;top:6px;left:6px;background:rgba(0,0,0,0.7);border-radius:4px;padding:2px 6px;font-size:10px;color:#fff">▶ ${p.file_ext}</div>` : ''}
+        <div class="post-meta">
+          <span class="post-score">▲${p.score}</span>
+          <button class="post-fav-btn" onclick="favPost(event,${p.id})" title="收藏">🤍</button>
+        </div>
+      </div>`;
+  }).join('');
+
+  // Store posts for quick access
+  posts.forEach(p => { window._postCache = window._postCache || {}; window._postCache[p.id] = p; });
+}
+
+// ===== SEARCH =====
+async function searchPosts(page=1) {
+  state.currentPage = page;
+  const tags = document.getElementById('searchInput').value.trim();
+  const limit = document.getElementById('countSelect').value;
+  state.lastSearch = tags;
+
+  // Build tag query
+  let tagQuery = tags;
+  const ratingPart = state.ratings.map(r=>`rating:${r}`).join(' ');
+  if (ratingPart) tagQuery = tagQuery ? `${tagQuery} (${ratingPart})` : `(${ratingPart})`;
+  if (state.order) tagQuery += ` order:${state.order}`;
+
+  document.getElementById('browseGrid').innerHTML = '<div class="spinner">加载中...</div>';
+  document.getElementById('browsePagination').innerHTML = '';
+  try {
+    const data = await apiFetch('/posts.json', { tags: tagQuery, limit, page });
+    state.browsePosts = (data.posts || []).map(parsePost);
+    renderGrid(state.browsePosts, 'browseGrid');
+    renderPagination('browsePagination', page, state.browsePosts.length >= parseInt(limit), (p)=>searchPosts(p));
+  } catch(e) {
+    document.getElementById('browseGrid').innerHTML = `<div class="empty-state"><div class="empty-icon">⚠️</div><div class="empty-text">加载失败：${e.message}</div></div>`;
+  }
+}
+
+// ===== FILTERS =====
+function toggleRating(el, rating) {
+  el.classList.toggle('active');
+  if (el.classList.contains('active')) {
+    if (!state.ratings.includes(rating)) state.ratings.push(rating);
+  } else {
+    state.ratings = state.ratings.filter(r => r !== rating);
+  }
+}
+function toggleOrder(el, order) {
+  document.querySelectorAll('.filter-row .chip').forEach(c => {
+    if (['','score','favcount','random'].map(o=>o).includes(c.onclick?.toString()?.match(/toggleOrder\(this,'(.*)'\)/)?.[1])) {
+      // reset order chips only
+    }
+  });
+  // simpler: just track active
+  el.closest('.filter-row').querySelectorAll('.chip').forEach(c => {
+    if (c.getAttribute('onclick')?.includes('toggleOrder')) c.classList.remove('active');
+  });
+  el.classList.add('active');
+  state.order = order;
+}
+
+// ===== FAVORITES =====
+async function loadFavorites(page=1) {
+  state.favPage = page;
+  const limit = document.getElementById('favCountSelect').value;
+  document.getElementById('favGrid').innerHTML = '<div class="spinner">加载中...</div>';
+  try {
+    const data = await apiFetch('/favorites.json', { user_id: cfg.username, limit, page });
+    const posts = (data.posts || []).map(parsePost);
+    state.favPosts = posts;
+    // learn from favorites
+    posts.forEach(p => { if(p.tags_all.length) addTagPrefs(p.tags_all.map(t=>`__fav__${t}`)); });
+    renderGrid(posts, 'favGrid');
+    renderPagination('favPagination', page, posts.length >= parseInt(limit), (p)=>loadFavorites(p));
+  } catch(e) {
+    document.getElementById('favGrid').innerHTML = `<div class="empty-state"><div class="empty-icon">⚠️</div><div class="empty-text">加载失败：${e.message}</div></div>`;
+  }
+}
+
+async function favPost(event, postId) {
+  event.stopPropagation();
+  try {
+    await fetch(`${PROXY}/favorites.json`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: `post_id=${postId}&login=${encodeURIComponent(cfg.username)}&api_key=${encodeURIComponent(cfg.apiKey)}&_client=${encodeURIComponent(UA)}`
+    });
+    showToast('❤️ 已收藏！');
+    event.target.textContent = '❤️';
+  } catch(e) {
+    showToast('收藏失败：' + e.message);
+  }
+}
+
+async function removeFav(postId) {
+  // DELETE不支持跨域，引导用户去原帖操作
+  showToast('⚠️ 取消收藏请前往原帖操作');
+  window.open(`https://e621.net/posts/${postId}`, '_blank');
+}
+
+async function votePost(postId, score) {
+  try {
+    await fetch(`${PROXY}/posts/${postId}/votes.json`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: `score=${score}&no_unvote=false&login=${encodeURIComponent(cfg.username)}&api_key=${encodeURIComponent(cfg.apiKey)}&_client=${encodeURIComponent(UA)}`
+    });
+    showToast(score > 0 ? '👍 已点赞！' : '👎 已点踩');
+  } catch(e) {
+    showToast('投票失败：' + e.message);
+  }
+}
+
+// ===== RECOMMEND =====
+async function loadRecommend() {
+  const prefs = getPrefs();
+  const history = getHistory();
+
+  // Merge fav-learned and view-learned
+  const merged = {};
+  Object.entries(prefs).forEach(([k,v]) => {
+    const realTag = k.startsWith('__fav__') ? k.slice(7) : k;
+    const weight = k.startsWith('__fav__') ? v * 2 : v; // fav权重更高
+    merged[realTag] = (merged[realTag]||0) + weight;
+  });
+
+  const sorted = Object.entries(merged)
+    .filter(([t]) => !['flash','sound','video','animated','hi_res','absurd_res'].includes(t))
+    .sort((a,b) => b[1]-a[1]);
+
+  if (sorted.length === 0) {
+    document.getElementById('recommendGrid').innerHTML = '<div class="empty-state"><div class="empty-icon">🤔</div><div class="empty-text">还没有偏好数据<br>先去浏览或收藏一些图片吧！</div></div>';
+    renderTopTags([]);
+    return;
+  }
+
+  renderTopTags(sorted.slice(0, 8));
+
+  // Pick tags for query
+  const freshRatio = cfg.freshRatio / 100;
+  const topN = Math.max(3, Math.round((1 - freshRatio) * 5));
+  const freshN = Math.round(freshRatio * 3);
+
+  const hotTags = sorted.slice(0, topN).map(([t]) => t);
+  const freshPool = sorted.slice(topN, sorted.length);
+  const freshTags = freshPool.length
+    ? Array.from({length: freshN}, () => freshPool[Math.floor(Math.random()*freshPool.length)][0])
+    : [];
+
+  const allTags = [...new Set([...hotTags, ...freshTags])].slice(0, 6);
+  const tagQuery = allTags.join(' ') + ' order:random';
+
+  document.getElementById('recBadge').textContent = `基于${history.length}条历史 + 收藏`;
+  document.getElementById('recommendGrid').innerHTML = '<div class="spinner">分析中...</div>';
+
+  try {
+    const data = await apiFetch('/posts.json', { tags: tagQuery, limit: 20 });
+    const posts = (data.posts || []).map(parsePost);
+    renderGrid(posts, 'recommendGrid');
+  } catch(e) {
+    document.getElementById('recommendGrid').innerHTML = `<div class="empty-state"><div class="empty-icon">⚠️</div><div class="empty-text">加载失败：${e.message}</div></div>`;
+  }
+}
+
+function renderTopTags(sorted) {
+  const wrap = document.getElementById('topTagsWrap');
+  if (!sorted.length) { wrap.innerHTML = ''; return; }
+  const max = sorted[0][1];
+  wrap.innerHTML = `
+    <div class="top-tags-wrap">
+      <div class="top-tags-title">你的Top Tag偏好</div>
+      ${sorted.map(([t,v]) => `
+        <div class="tag-bar-row">
+          <div class="tag-bar-name">${t}</div>
+          <div class="tag-bar-track"><div class="tag-bar-fill" style="width:${(v/max*100).toFixed(0)}%"></div></div>
+          <div class="tag-bar-count">${v}</div>
+        </div>
+      `).join('')}
+    </div>`;
+}
+
+// ===== HISTORY PAGE =====
+function loadHistoryPage() {
+  const h = getHistory();
+  if (!h.length) {
+    document.getElementById('historyGrid').innerHTML = '<div class="empty-state"><div class="empty-icon">📭</div><div class="empty-text">暂无浏览历史</div></div>';
+    return;
+  }
+  const container = document.getElementById('historyGrid');
+  container.innerHTML = h.map(p => `
+    <div class="post-card viewed" onclick="openPost(${p.id})" data-id="${p.id}">
+      ${p.thumb ? `<img class="post-thumb" src="${p.thumb}" loading="lazy" alt="post ${p.id}">` : `<div class="post-thumb-placeholder">🖼️ #${p.id}</div>`}
+      <div class="post-meta">
+        <span class="post-score">▲${p.score||0}</span>
+        <button class="post-fav-btn" onclick="favPost(event,${p.id})">🤍</button>
+      </div>
+    </div>`).join('');
+}
+
+// ===== OPEN POST MODAL =====
+async function openPost(postId) {
+  const overlay = document.getElementById('modalOverlay');
+  overlay.classList.add('open');
+  document.getElementById('modalImgWrap').innerHTML = '<button class="modal-close" onclick="closeModal()">×</button><div class="spinner" style="padding:40px"></div>';
+  document.getElementById('modalTitle').textContent = `Post #${postId}`;
+  document.getElementById('modalActions').innerHTML = '';
+  document.getElementById('modalTags').innerHTML = '';
+
+  try {
+    // Try cache first
+    let post = window._postCache?.[postId];
+    if (!post) {
+      const data = await apiFetch(`/posts/${postId}.json`);
+      post = parsePost(data.post || data);
+      window._postCache = window._postCache || {};
+      window._postCache[postId] = post;
+    }
+
+    // Record history
+    addHistory(post);
+
+    // Render media
+    const imgWrap = document.getElementById('modalImgWrap');
+    const isVideo = ['webm','mp4'].includes(post.file_ext);
+    const mediaSrc = post.sample_url || post.file_url || post.preview_url;
+
+    if (isVideo && post.file_url) {
+      imgWrap.innerHTML = `
+        <button class="modal-close" onclick="closeModal()">×</button>
+        <video class="modal-video" controls autoplay loop>
+          <source src="${post.file_url}" type="video/${post.file_ext}">
+        </video>`;
+    } else if (mediaSrc) {
+      imgWrap.innerHTML = `
+        <button class="modal-close" onclick="closeModal()">×</button>
+        <img class="modal-img" src="${mediaSrc}" alt="post ${postId}"
+          onerror="this.src='${post.preview_url||''}'"
+          onclick="window.open('${post.file_url||mediaSrc}','_blank')">`;
+    } else {
+      imgWrap.innerHTML = `<button class="modal-close" onclick="closeModal()">×</button><div style="padding:40px;color:var(--text3)">无法加载图片</div>`;
+    }
+
+    // Title
+    document.getElementById('modalTitle').textContent = `Post #${postId} · ▲${post.score} · ❤️${post.fav_count}`;
+
+    // Actions
+    document.getElementById('modalActions').innerHTML = `
+      <button class="btn-sm" onclick="votePost(${postId},1)">👍 点赞</button>
+      <button class="btn-sm" onclick="votePost(${postId},-1)">👎 踩</button>
+      <button class="btn-sm fav" onclick="favPost(event,${postId})">❤️ 收藏</button>
+      <button class="btn-sm fav" onclick="removeFav(${postId})" style="border-color:var(--text3);color:var(--text3)">💔 取消收藏</button>
+      ${post.file_url ? `<button class="btn-sm" onclick="window.open('${post.file_url}','_blank')">⬇️ 原图</button>` : ''}
+      <button class="btn-sm" onclick="window.open('https://e621.net/posts/${postId}','_blank')">🔗 原帖</button>
+    `;
+
+    // Tags
+    const tagsHtml = [
+      { title: '🎨 作者 Artist', list: post.tags_artist, cls: 'artist' },
+      { title: '© 版权 Copyright', list: post.tags_copyright, cls: 'copyright' },
+      { title: '🐾 物种 Species', list: post.tags_species, cls: 'species' },
+      { title: '🏷️ 通用 General', list: post.tags_general, cls: 'general' },
+      { title: '📋 Meta', list: post.tags_meta, cls: 'meta' },
+    ].filter(g => g.list.length).map(g => `
+      <div class="tags-group">
+        <div class="tags-group-title">${g.title}</div>
+        <div class="tags-wrap">
+          ${g.list.map(t => `<span class="tag ${g.cls}" onclick="searchByTag('${t}')">${t}</span>`).join('')}
+        </div>
+      </div>
+    `).join('');
+
+    document.getElementById('modalTags').innerHTML = tagsHtml;
+
+  } catch(e) {
+    document.getElementById('modalImgWrap').innerHTML = `<button class="modal-close" onclick="closeModal()">×</button><div style="padding:40px;color:#ff6060">加载失败：${e.message}</div>`;
+  }
+}
+
+function searchByTag(tag) {
+  closeModal();
+  switchTab('browse');
+  document.getElementById('searchInput').value = tag;
+  searchPosts();
+}
+
+function closeModal() {
+  document.getElementById('modalOverlay').classList.remove('open');
+}
+function closeModalOutside(e) {
+  if (e.target === document.getElementById('modalOverlay')) closeModal();
+}
+
+// ===== PAGINATION =====
+function renderPagination(id, current, hasNext, onPage) {
+  const el = document.getElementById(id);
+  el.innerHTML = `
+    <button class="page-btn" ${current<=1?'disabled':''} onclick="(${onPage})(${current-1})">← 上一页</button>
+    <button class="page-btn" style="color:var(--accent);border-color:var(--accent)">${current}</button>
+    <button class="page-btn" ${!hasNext?'disabled':''} onclick="(${onPage})(${current+1})">下一页 →</button>
+  `;
+}
+
+// ===== TABS =====
+function switchTab(tab) {
+  state.currentTab = tab;
+  ['browse','recommend','favorites','history','settings'].forEach(t => {
+    document.getElementById(`page-${t}`).style.display = t===tab ? 'block' : 'none';
+    const tabEl = document.getElementById(`tab-${t}`);
+    if (tabEl) tabEl.classList.toggle('active', t===tab);
+  });
+  if (tab === 'recommend') loadRecommend();
+  if (tab === 'favorites') loadFavorites();
+  if (tab === 'history') loadHistoryPage();
+  if (tab === 'settings') updateSettingsStats();
+}
+
+// ===== THEME =====
+const themes = [
+  { bg:'#0a0a0f', surface:'#12121a', surface2:'#1a1a26', border:'#2a2a3a', accent:'#7c6aff', accent2:'#ff6a9b', accent3:'#6affd4', text:'#e8e8f0', text2:'#8888aa', text3:'#55557799' },
+  { bg:'#0d0f0a', surface:'#131a12', surface2:'#1a261a', border:'#2a3a2a', accent:'#6aff9b', accent2:'#ffb36a', accent3:'#6ae4ff', text:'#e8f0e8', text2:'#88aa88', text3:'#55775599' },
+  { bg:'#0f0a0f', surface:'#1a121a', surface2:'#221a26', border:'#3a2a3a', accent:'#ff6af0', accent2:'#6ab8ff', accent3:'#ffd46a', text:'#f0e8f0', text2:'#aa88aa', text3:'#77557799' },
+];
+let themeIdx = 0;
+function cycleTheme() {
+  themeIdx = (themeIdx+1) % themes.length;
+  const t = themes[themeIdx];
+  const r = document.documentElement.style;
+  Object.entries(t).forEach(([k,v]) => r.setProperty(`--${k}`, v));
+  showToast('🎨 主题已切换');
+}
+
+// ===== TOAST =====
+function showToast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), 2200);
+}
+
+// ===== KEYBOARD =====
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') closeModal();
+  if (e.key === 'Enter' && document.activeElement === document.getElementById('searchInput')) searchPosts();
+});
+
+// ===== INIT =====
+loadStorage();
+searchPosts();
+</script>
+
+</body>
+</html>
