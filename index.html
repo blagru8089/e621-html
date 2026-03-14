@@ -1,0 +1,945 @@
+<!DOCTYPE html>
+
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>E621 Gallery</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500&family=IBM+Plex+Sans:wght@300;400;500;600&family=Source+Serif+4:wght@300;400;600&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+/* === CSS 变量（亮色默认） === */
+:root {
+  --bg: #f2f2f2;
+  --surface: #ffffff;
+  --text: #111111;
+  --text2: #555555;
+  --text3: #999999;
+  --danger: #cc2222;
+  --tag-artist: #8b3a00;
+  --tag-copy: #5500aa;
+  --tag-species: #003d99;
+  --tag-general: #1a5c00;
+  --tag-meta: #444444;
+  --font-ui: 'IBM Plex Sans', sans-serif;
+  --font-mono: 'IBM Plex Mono', monospace;
+  --thumb: 180px;
+}
+/* === 暗色模式：只改变量，不写其他规则 === */
+:root.dark {
+  --bg: #141414;
+  --surface: #1e1e1e;
+  --text: #eeeeee;
+  --text2: #aaaaaa;
+  --text3: #666666;
+  --danger: #ff6666;
+  --tag-artist: #ffaa55;
+  --tag-copy: #cc88ff;
+  --tag-species: #66aaff;
+  --tag-general: #66cc44;
+  --tag-meta: #bbbbbb;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+html { background:var(--bg); }
+body { background:var(--bg); color:var(--text); font-family:var(--font-ui); font-size:14px; min-height:100vh; }
+
+/* LOGIN */
+#loginPage { min-height:100vh; display:flex; align-items:center; justify-content:center; padding:20px; }
+.login-box { background:var(–surface); padding:40px 36px; width:100%; max-width:400px; }
+.login-title { font-size:20px; font-weight:600; margin-bottom:8px; color:var(–text); }
+.login-sub { font-size:12px; color:var(–text2); margin-bottom:28px; line-height:1.7; }
+.field { margin-bottom:16px; }
+.field label { display:block; font-size:11px; color:var(–text3); margin-bottom:6px; font-family:var(–font-mono); text-transform:uppercase; letter-spacing:0.8px; }
+.field input { width:100%; padding:10px 12px; background:var(–bg); border:1px solid transparent; font-family:var(–font-mono); font-size:13px; color:var(–text); outline:none; }
+.field input:focus { border-color:var(–text3); }
+.remember-row { display:flex; align-items:center; gap:8px; }
+.remember-row input { width:auto; }
+.remember-row label { font-size:12px; color:var(–text2); cursor:pointer; }
+.btn-login { width:100%; padding:12px; background:var(–text); color:var(–bg); border:none; font-family:var(–font-ui); font-size:14px; font-weight:600; cursor:pointer; margin-top:20px; }
+.btn-login:hover { opacity:0.85; }
+.login-error { font-size:12px; color:var(–danger); margin-top:10px; display:none; font-family:var(–font-mono); }
+
+/* APP */
+#appPage { display:none; }
+header { background:var(–surface); height:50px; display:flex; align-items:center; padding:0 16px; justify-content:space-between; position:sticky; top:0; z-index:100; }
+.logo { font-family:var(–font-mono); font-size:14px; font-weight:500; color:var(–text); }
+.header-right { display:flex; gap:4px; align-items:center; }
+.username-badge { font-family:var(–font-mono); font-size:11px; color:var(–text3); margin-right:6px; }
+.btn-text { background:none; border:none; font-size:12px; color:var(–text2); cursor:pointer; padding:5px 8px; font-family:var(–font-ui); }
+.btn-text:hover { background:var(–bg); color:var(–text); }
+
+/* TABS */
+.tabs { background:var(–surface); display:flex; padding:0 16px; border-top:1px solid rgba(128,128,128,0.15); overflow-x:auto; scrollbar-width:none; }
+.tabs::-webkit-scrollbar { display:none; }
+.tab { padding:10px 14px; font-size:12px; font-weight:500; color:var(–text3); cursor:pointer; white-space:nowrap; background:none; border:none; border-bottom:2px solid transparent; font-family:var(–font-ui); }
+.tab:hover { color:var(–text2); }
+.tab.active { color:var(–text); border-bottom-color:var(–text); }
+
+/* MAIN */
+.main { padding:16px; max-width:1400px; margin:0 auto; }
+
+/* SEARCH */
+.search-row { display:flex; gap:8px; margin-bottom:12px; flex-wrap:wrap; }
+.search-wrap { flex:1; min-width:180px; position:relative; }
+.search-input { width:100%; padding:10px 12px; background:var(–surface); border:none; color:var(–text); font-family:var(–font-mono); font-size:13px; outline:none; }
+.search-input::placeholder { color:var(–text3); }
+.search-input:focus { outline:1px solid var(–text3); }
+.autocomplete-box { position:absolute; top:100%; left:0; right:0; z-index:50; max-height:220px; overflow-y:auto; display:none; background:var(–surface); box-shadow:0 4px 16px rgba(0,0,0,0.2); border:1px solid rgba(128,128,128,0.15); }
+.autocomplete-box.open { display:block; }
+.ac-item { padding:8px 12px; font-size:12px; font-family:var(–font-mono); cursor:pointer; color:var(–text2); display:flex; justify-content:space-between; }
+.ac-item:hover, .ac-item.selected { background:var(–bg); color:var(–text); }
+.ac-count { color:var(–text3); font-size:11px; }
+.btn-main { padding:10px 20px; background:var(–text); color:var(–bg); border:none; font-family:var(–font-ui); font-size:13px; font-weight:500; cursor:pointer; }
+.btn-main:hover { opacity:0.85; }
+
+/* FILTER CHIPS */
+.filter-row { display:flex; gap:6px; margin-bottom:16px; flex-wrap:wrap; align-items:center; }
+.filter-label { font-size:11px; color:var(–text3); font-family:var(–font-mono); }
+.chip { padding:5px 12px; font-size:11px; background:var(–surface); color:var(–text2); cursor:pointer; border:1px solid transparent; font-family:var(–font-mono); }
+.chip:hover { color:var(–text); border-color:var(–text3); }
+.chip.active { background:var(–text); color:var(–bg); border-color:var(–text); }
+.divider { width:1px; height:18px; background:rgba(128,128,128,0.25); margin:0 4px; }
+
+/* GRID */
+.gallery-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(var(–thumb), 1fr)); gap:10px; }
+.post-card { background:var(–surface); cursor:pointer; position:relative; border:1px solid rgba(128,128,128,0.18); }
+.post-card:hover { opacity:0.82; border-color:var(–text3); }
+.post-thumb { width:100%; aspect-ratio:1/1; object-fit:cover; display:block; background:#cccccc; }
+.post-ph { width:100%; aspect-ratio:1/1; display:flex; align-items:center; justify-content:center; background:#dddddd; color:var(–text3); font-size:11px; font-family:var(–font-mono); }
+.post-footer { padding:6px 8px; display:flex; justify-content:space-between; align-items:center; background:var(–surface); }
+.post-score { font-size:11px; color:var(–text2); font-family:var(–font-mono); }
+.fav-btn { background:none; border:none; cursor:pointer; font-size:11px; color:var(–text3); padding:0; font-family:var(–font-mono); }
+.fav-btn:hover { color:var(–danger); }
+.badge { position:absolute; font-size:9px; padding:2px 5px; font-family:var(–font-mono); color:#fff; }
+.b-seen { top:5px; right:5px; background:rgba(0,0,0,0.55); }
+.b-vid { top:5px; left:5px; background:rgba(0,0,0,0.65); }
+.b-rating { bottom:30px; left:5px; }
+.b-s { background:rgba(20,120,20,0.8); }
+.b-q { background:rgba(160,120,0,0.8); }
+.b-e { background:rgba(160,20,20,0.8); }
+
+/* BACK BUTTON */
+.btn-back { background:none; border:none; color:var(–text2); font-size:13px; cursor:pointer; font-family:var(–font-mono); padding:4px 8px; display:none; align-items:center; gap:4px; }
+.btn-back.visible { display:flex; }
+.btn-back:hover { color:var(–text); }
+
+/* PAGINATION */
+.pagination { display:flex; gap:5px; justify-content:center; margin-top:24px; flex-wrap:wrap; }
+.page-btn { padding:6px 12px; background:var(–surface); border:none; color:var(–text2); font-family:var(–font-mono); font-size:12px; cursor:pointer; }
+.page-btn:hover:not(:disabled) { color:var(–text); }
+.page-btn.current { background:var(–text); color:var(–bg); cursor:default; }
+.page-btn:disabled { opacity:0.3; cursor:not-allowed; }
+.page-ell { padding:6px 4px; color:var(–text3); font-family:var(–font-mono); font-size:12px; }
+
+/* MODAL */
+.modal-overlay { position:fixed; inset:0; z-index:200; background:var(–bg); display:none; align-items:flex-start; justify-content:center; overflow-y:auto; }
+.modal-overlay.open { display:flex; }
+.modal { background:var(–surface); width:100%; max-width:860px; margin:auto; }
+.modal-topbar { background:var(–surface); display:flex; align-items:center; padding:8px 14px; gap:10px; border-bottom:1px solid rgba(128,128,128,0.12); }
+.modal-close { background:var(–bg); color:var(–text); border:none; width:32px; height:32px; font-size:18px; cursor:pointer; display:flex; align-items:center; justify-content:center; font-family:var(–font-mono); flex-shrink:0; }
+.modal-close:hover { background:var(–text); color:var(–bg); }
+.modal-title-info { font-family:var(–font-mono); font-size:11px; color:var(–text3); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.modal-media { background:var(–bg); display:flex; align-items:center; justify-content:center; min-height:200px; max-height:75vh; overflow:hidden; }
+.modal-img { max-width:100%; max-height:75vh; object-fit:contain; display:block; cursor:zoom-in; }
+.modal-video { max-width:100%; max-height:75vh; display:block; }
+.modal-body { padding:16px; background:var(–surface); }
+.modal-info { font-family:var(–font-mono); font-size:11px; color:var(–text3); margin-bottom:12px; }
+.modal-actions { display:flex; gap:6px; flex-wrap:wrap; margin-bottom:16px; }
+.action-btn { padding:7px 14px; background:var(–bg); border:none; color:var(–text); font-family:var(–font-ui); font-size:12px; cursor:pointer; font-weight:500; }
+.action-btn:hover { background:var(–text); color:var(–bg); }
+
+/* TAGS */
+.tags-section { display:flex; flex-direction:column; gap:6px; }
+.tag-group { border:1px solid rgba(128,128,128,0.2); overflow:hidden; }
+.tag-group-header { display:flex; align-items:center; justify-content:space-between; padding:8px 12px; cursor:pointer; background:var(–bg); font-size:11px; font-family:var(–font-mono); font-weight:600; text-transform:uppercase; letter-spacing:0.8px; color:var(–text2); user-select:none; }
+.tag-group-header:hover { background:var(–surface); }
+.tag-group-arrow { font-size:10px; transition:transform 0.15s; display:inline-block; }
+.tag-group.collapsed .tag-group-arrow { transform:rotate(-90deg); }
+.tag-group.collapsed .tag-list { display:none; }
+.tag-list { background:var(–surface); }
+.tag { display:block; padding:7px 14px; font-size:12px; font-family:var(–font-mono); cursor:pointer; border-bottom:1px solid rgba(128,128,128,0.1); }
+.tag:last-child { border-bottom:none; }
+.tag:hover { text-decoration:underline; opacity:0.8; }
+.tag.artist    { color:var(–tag-artist); }
+.tag.copyright { color:var(–tag-copy); }
+.tag.species   { color:var(–tag-species); }
+.tag.general   { color:var(–tag-general); }
+.tag.meta      { color:var(–tag-meta); }
+
+/* SECTION */
+.section-header { display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:14px; flex-wrap:wrap; gap:8px; }
+.section-title { font-size:16px; font-weight:600; color:var(–text); }
+.section-sub { font-size:11px; color:var(–text3); font-family:var(–font-mono); margin-top:4px; }
+
+/* PREF BARS */
+.pref-bar-wrap { background:var(–surface); padding:14px 16px; margin-bottom:16px; }
+.pref-bar-title { font-size:10px; color:var(–text3); margin-bottom:10px; font-family:var(–font-mono); text-transform:uppercase; letter-spacing:1px; }
+.pref-row { display:flex; align-items:center; gap:10px; margin-bottom:6px; }
+.pref-name { font-size:11px; font-family:var(–font-mono); min-width:130px; color:var(–text2); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.pref-track { flex:1; height:3px; background:rgba(128,128,128,0.2); }
+.pref-fill { height:100%; background:var(–text); }
+.pref-count { font-size:11px; color:var(–text3); font-family:var(–font-mono); min-width:26px; text-align:right; }
+
+/* SETTINGS */
+.settings-block { background:var(–surface); padding:18px; margin-bottom:12px; }
+.settings-block-title { font-size:10px; font-weight:600; text-transform:uppercase; letter-spacing:1.2px; color:var(–text3); margin-bottom:14px; font-family:var(–font-mono); }
+.settings-row { display:flex; align-items:center; justify-content:space-between; padding:8px 0; gap:12px; flex-wrap:wrap; border-bottom:1px solid rgba(128,128,128,0.1); }
+.settings-row:last-child { border-bottom:none; }
+.settings-label { font-size:13px; color:var(–text); }
+.settings-val { font-size:12px; color:var(–text3); font-family:var(–font-mono); }
+.settings-input { background:var(–bg); border:none; padding:7px 10px; font-family:var(–font-mono); font-size:12px; color:var(–text); outline:none; }
+.settings-input:focus { outline:1px solid var(–text3); }
+.color-swatches { display:flex; gap:6px; }
+.swatch { width:26px; height:26px; cursor:pointer; border:2px solid transparent; }
+.swatch:hover { border-color:var(–text2); }
+.swatch.active { border-color:var(–text); }
+.btn-save { padding:8px 16px; background:var(–text); color:var(–bg); border:none; font-family:var(–font-ui); font-size:12px; font-weight:500; cursor:pointer; margin-top:10px; }
+.btn-save:hover { opacity:0.85; }
+.btn-danger { padding:7px 14px; background:transparent; color:var(–danger); border:1px solid var(–danger); font-family:var(–font-ui); font-size:12px; cursor:pointer; }
+.btn-danger:hover { background:var(–danger); color:#fff; }
+
+/* MISC */
+.empty-state { text-align:center; padding:60px 20px; color:var(–text3); font-size:13px; font-family:var(–font-mono); }
+.spinner { display:block; width:24px; height:24px; border:2px solid rgba(128,128,128,0.2); border-top-color:var(–text); border-radius:50%; margin:60px auto; animation:spin 0.7s linear infinite; }
+@keyframes spin { to { transform:rotate(360deg); } }
+.toast { position:fixed; bottom:20px; left:50%; transform:translateX(-50%); background:var(–text); color:var(–bg); padding:8px 20px; font-size:12px; font-family:var(–font-mono); z-index:999; opacity:0; transition:opacity 0.25s; pointer-events:none; white-space:nowrap; }
+.toast.show { opacity:1; }
+@media (max-width:540px) { .gallery-grid { grid-template-columns:repeat(auto-fill,minmax(140px,1fr)); } }
+</style>
+
+</head>
+<body>
+
+<div id="loginPage">
+  <div class="login-box">
+    <div class="login-title">E621 Gallery</div>
+    <div class="login-sub">输入你的 e621 账号和 API Key 登录。<br>凭据仅保存在本地，不会上传到任何服务器。</div>
+    <div class="field"><label>Username</label><input id="loginUser" type="text" autocomplete="username"></div>
+    <div class="field"><label>API Key</label><input id="loginKey" type="password" autocomplete="current-password"></div>
+    <div class="field remember-row">
+      <input id="loginRemember" type="checkbox">
+      <label for="loginRemember">记住登录状态</label>
+    </div>
+    <button class="btn-login" onclick="doLogin()">登录</button>
+    <div class="login-error" id="loginError"></div>
+  </div>
+</div>
+
+<div id="appPage">
+  <header>
+    <div style="display:flex;align-items:center;gap:6px">
+      <button class="btn-back" id="backBtn" onclick="goBack()">&#x2190; 返回</button>
+      <div class="logo">E621 Gallery</div>
+    </div>
+    <div class="header-right">
+      <span class="username-badge" id="headerUser"></span>
+      <button class="btn-text" onclick="doLogout()">退出登录</button>
+    </div>
+  </header>
+  <div class="tabs">
+    <button class="tab active" id="tab-browse"    onclick="switchTab('browse')">浏览</button>
+    <button class="tab"        id="tab-recommend" onclick="switchTab('recommend')">推荐</button>
+    <button class="tab"        id="tab-favorites" onclick="switchTab('favorites')">收藏</button>
+    <button class="tab"        id="tab-history"   onclick="switchTab('history')">历史</button>
+    <button class="tab"        id="tab-settings"  onclick="switchTab('settings')">设置</button>
+  </div>
+  <div class="main">
+
+```
+<div id="page-browse">
+  <div class="search-row">
+    <div class="search-wrap">
+      <input class="search-input" id="searchInput" placeholder="搜索 tag...">
+      <div class="autocomplete-box" id="acBox"></div>
+    </div>
+    <button class="btn-main" onclick="searchPosts()">搜索</button>
+  </div>
+  <div class="filter-row">
+    <span class="filter-label">评分</span>
+    <button class="chip active" data-rating="s" onclick="toggleRating(this,'s')">安全</button>
+    <button class="chip"        data-rating="q" onclick="toggleRating(this,'q')">一般</button>
+    <button class="chip"        data-rating="e" onclick="toggleRating(this,'e')">成人</button>
+    <div class="divider"></div>
+    <span class="filter-label">排序</span>
+    <button class="chip active" data-order=""       onclick="toggleOrder(this,'')">最新</button>
+    <button class="chip"        data-order="score"  onclick="toggleOrder(this,'score')">高分</button>
+    <button class="chip"        data-order="hot"    onclick="toggleOrder(this,'hot')">热门</button>
+    <button class="chip"        data-order="random" onclick="toggleOrder(this,'random')">随机</button>
+  </div>
+  <div id="browseGrid" class="gallery-grid"></div>
+  <div class="pagination" id="browsePagination"></div>
+</div>
+
+<div id="page-recommend" style="display:none">
+  <div class="section-header">
+    <div>
+      <div class="section-title">智能推荐</div>
+      <div class="section-sub" id="recSub">基于收藏与浏览历史分析</div>
+    </div>
+    <button class="btn-main" onclick="loadRecommend()">刷新</button>
+  </div>
+  <div id="prefBarWrap"></div>
+  <div id="recommendGrid" class="gallery-grid"></div>
+</div>
+
+<div id="page-favorites" style="display:none">
+  <div class="section-header">
+    <div class="section-title">收藏</div>
+    <button class="btn-main" onclick="loadFavorites()">刷新</button>
+  </div>
+  <div id="favGrid" class="gallery-grid"></div>
+  <div class="pagination" id="favPagination"></div>
+</div>
+
+<div id="page-history" style="display:none">
+  <div class="section-header">
+    <div class="section-title">浏览历史</div>
+    <button class="btn-danger" onclick="clearHistory()">清空历史</button>
+  </div>
+  <div id="historyGrid" class="gallery-grid"></div>
+</div>
+
+<div id="page-settings" style="display:none">
+  <div class="settings-block">
+    <div class="settings-block-title">显示</div>
+    <div class="settings-row">
+      <div class="settings-label">深色模式</div>
+      <button class="btn-save" id="darkBtn" onclick="toggleDark()" style="margin-top:0;padding:6px 14px">关闭</button>
+    </div>
+    <div class="settings-row">
+      <div class="settings-label">背景颜色</div>
+      <div class="color-swatches" id="bgSwatches"></div>
+    </div>
+    <div class="settings-row">
+      <div class="settings-label">字体</div>
+      <select class="settings-input" id="fontSelect" onchange="applyFont(this.value)" style="max-width:170px">
+        <option value="ibm">IBM Plex Sans</option>
+        <option value="jetbrains">JetBrains Mono</option>
+        <option value="serif">Source Serif 4</option>
+      </select>
+    </div>
+    <div class="settings-row">
+      <div class="settings-label">每页数量</div>
+      <select class="settings-input" id="pageSizeSelect" onchange="cfg.pageSize=+this.value;saveCfg()" style="max-width:100px">
+        <option value="10">10</option>
+        <option value="20" selected>20</option>
+        <option value="40">40</option>
+        <option value="75">75</option>
+      </select>
+    </div>
+    <div class="settings-row">
+      <div class="settings-label">缩略图大小</div>
+      <select class="settings-input" id="thumbSelect" onchange="applyThumb(this.value)" style="max-width:100px">
+        <option value="140px">小</option>
+        <option value="180px" selected>中</option>
+        <option value="240px">大</option>
+      </select>
+    </div>
+  </div>
+  <div class="settings-block">
+    <div class="settings-block-title">推荐</div>
+    <div class="settings-row">
+      <div class="settings-label">新鲜感比例</div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <input class="settings-input" id="setFresh" type="number" min="0" max="50" value="20" style="width:60px">
+        <span style="font-size:12px;color:var(--text3)">% 低频 tag</span>
+      </div>
+    </div>
+    <button class="btn-save" onclick="saveFresh()">保存</button>
+  </div>
+  <div class="settings-block">
+    <div class="settings-block-title">数据</div>
+    <div class="settings-row">
+      <div class="settings-label">浏览历史</div>
+      <div class="settings-val" id="histCount">-</div>
+    </div>
+    <div class="settings-row">
+      <div class="settings-label">Tag 偏好</div>
+      <div class="settings-val" id="prefCount">-</div>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap">
+      <button class="btn-danger" onclick="clearHistory()">清空历史</button>
+      <button class="btn-danger" onclick="clearPrefs()">清空偏好</button>
+    </div>
+  </div>
+</div>
+```
+
+  </div>
+</div>
+
+<div class="modal-overlay" id="modalOverlay" onclick="closeModalOutside(event)">
+  <div class="modal" id="modalBox">
+    <div class="modal-topbar">
+      <button class="modal-close" onclick="closeModal()">&#x2190;</button>
+      <div class="modal-title-info" id="modalInfo"></div>
+    </div>
+    <div class="modal-media" id="modalMedia"></div>
+    <div class="modal-body">
+      <div class="modal-actions" id="modalActions"></div>
+      <div class="tags-section" id="modalTags"></div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const API = 'https://e621.net';
+const UA  = 'E621GalleryApp/1.0 (by Blagru on e621)';
+
+let cfg  = { freshRatio:20, pageSize:20, thumbSize:'180px', font:'ibm', dark:false, bgIdx:0 };
+let sess = { username:'', apiKey:'' };
+let st   = { tab:'browse', ratings:['s'], order:'', page:1, favPage:1 };
+window._cache = {};
+
+const BG_LIGHT = ['#f2f2f2','#f5f0e8','#edf0f4','#eef4ee','#f4f1ec'];
+const BG_DARK  = ['#141414','#1a1610','#111518','#111a11','#181510'];
+
+// AUTH
+function doLogin() {
+  const u = document.getElementById('loginUser').value.trim();
+  const k = document.getElementById('loginKey').value.trim();
+  const e = document.getElementById('loginError');
+  if (!u || !k) { e.textContent='请填写用户名和 API Key'; e.style.display='block'; return; }
+  e.style.display = 'none';
+  sess = { username:u, apiKey:k };
+  if (document.getElementById('loginRemember').checked)
+    localStorage.setItem('e621sess', JSON.stringify(sess));
+  startApp();
+}
+function doLogout() {
+  sess = { username:'', apiKey:'' };
+  localStorage.removeItem('e621sess');
+  document.getElementById('appPage').style.display = 'none';
+  document.getElementById('loginPage').style.display = 'flex';
+}
+function startApp() {
+  document.getElementById('loginPage').style.display = 'none';
+  document.getElementById('appPage').style.display = 'block';
+  document.getElementById('headerUser').textContent = sess.username;
+  loadCfg(); applyAll(); searchPosts();
+}
+function tryAutoLogin() {
+  try {
+    const s = JSON.parse(localStorage.getItem('e621sess') || 'null');
+    if (s && s.username && s.apiKey) {
+      sess = s;
+      document.getElementById('loginUser').value = s.username;
+      document.getElementById('loginKey').value = s.apiKey;
+      document.getElementById('loginRemember').checked = true;
+      startApp();
+    }
+  } catch(e) {}
+}
+
+// SETTINGS
+function loadCfg() {
+  try {
+    const s = JSON.parse(localStorage.getItem('e621cfg') || '{}');
+    cfg.freshRatio = s.freshRatio ?? 20;
+    cfg.pageSize   = s.pageSize   ?? 20;
+    cfg.thumbSize  = s.thumbSize  ?? '180px';
+    cfg.font       = s.font       ?? 'ibm';
+    cfg.dark       = s.dark       ?? false;
+    cfg.bgIdx      = s.bgIdx      ?? 0;
+  } catch(e) {}
+}
+function saveCfg() { localStorage.setItem('e621cfg', JSON.stringify(cfg)); }
+function saveFresh() {
+  cfg.freshRatio = parseInt(document.getElementById('setFresh').value) || 20;
+  saveCfg(); showToast('已保存');
+}
+function applyAll() {
+  applyDark(cfg.dark);
+  applyFont(cfg.font);
+  applyThumb(cfg.thumbSize);
+  document.getElementById('pageSizeSelect').value = cfg.pageSize;
+  document.getElementById('fontSelect').value = cfg.font;
+  document.getElementById('thumbSelect').value = cfg.thumbSize;
+  document.getElementById('setFresh').value = cfg.freshRatio;
+  buildSwatches();
+}
+function applyDark(on) {
+  cfg.dark = on;
+  document.documentElement.classList.toggle('dark', on);
+  document.getElementById('darkBtn').textContent = on ? '开启' : '关闭';
+  applyBgColor();
+  saveCfg();
+}
+function toggleDark() { applyDark(!cfg.dark); }
+function applyBg(idx) { cfg.bgIdx = idx; applyBgColor(); saveCfg(); buildSwatches(); }
+function applyBgColor() {
+  const colors = cfg.dark ? BG_DARK : BG_LIGHT;
+  document.documentElement.style.setProperty('--bg', colors[cfg.bgIdx]);
+  if (cfg.dark) {
+    const surfs = ['#1e1e1e','#221d15','#181e22','#162016','#201a12'];
+    document.documentElement.style.setProperty('--surface', surfs[cfg.bgIdx]);
+  } else {
+    document.documentElement.style.removeProperty('--surface');
+  }
+}
+function buildSwatches() {
+  const wrap = document.getElementById('bgSwatches');
+  if (!wrap) return;
+  wrap.innerHTML = BG_LIGHT.map((c,i) =>
+    '<div class="swatch ' + (i===cfg.bgIdx?'active':'') + '" style="background:' + c + '" onclick="applyBg(' + i + ')"></div>'
+  ).join('');
+}
+function applyFont(val) {
+  cfg.font = val;
+  const map = { ibm:"'IBM Plex Sans',sans-serif", jetbrains:"'JetBrains Mono',monospace", serif:"'Source Serif 4',serif" };
+  document.documentElement.style.setProperty('--font-ui', map[val] || map.ibm);
+  saveCfg();
+}
+function applyThumb(val) {
+  cfg.thumbSize = val;
+  document.documentElement.style.setProperty('--thumb', val);
+  saveCfg();
+}
+function updateStats() {
+  document.getElementById('histCount').textContent = getHistory().length + ' 条';
+  document.getElementById('prefCount').textContent = Object.keys(getPrefs()).length + ' 条';
+  buildSwatches();
+}
+
+// STORAGE
+function getPrefs() { try { return JSON.parse(localStorage.getItem('e621prefs') || '{}'); } catch(e) { return {}; } }
+function addPrefs(tags, w) { const p=getPrefs(); tags.forEach(t=>{ p[t]=(p[t]||0)+w; }); localStorage.setItem('e621prefs',JSON.stringify(p)); }
+function clearPrefs() { localStorage.removeItem('e621prefs'); showToast('偏好已清空'); updateStats(); }
+function getHistory() { try { return JSON.parse(localStorage.getItem('e621hist') || '[]'); } catch(e) { return []; } }
+function addHistory(post) {
+  let h = getHistory();
+  if (h.find(p => p.id === post.id)) return;
+  h.unshift({ id:post.id, thumb:post.preview_url, score:post.score });
+  if (h.length > 500) h = h.slice(0, 500);
+  localStorage.setItem('e621hist', JSON.stringify(h));
+  addPrefsWeighted(post);
+}
+function clearHistory() {
+  localStorage.removeItem('e621hist');
+  showToast('历史已清空'); updateStats();
+  document.getElementById('historyGrid').innerHTML = '<div class="empty-state">暂无浏览历史</div>';
+}
+
+// API
+async function apiFetch(ep, params) {
+  const url = new URL(API + ep);
+  if (params) Object.entries(params).forEach(function(kv) { if (kv[1] !== undefined && kv[1] !== '') url.searchParams.set(kv[0], kv[1]); });
+  url.searchParams.set('login', sess.username);
+  url.searchParams.set('api_key', sess.apiKey);
+  url.searchParams.set('_client', UA);
+  const res = await fetch(url.toString());
+  if (!res.ok) throw new Error('HTTP ' + res.status);
+  return res.json();
+}
+async function apiPost(ep, body) {
+  const url = new URL(API + ep);
+  const b = new URLSearchParams(Object.assign({}, body, { login:sess.username, api_key:sess.apiKey, _client:UA }));
+  return fetch(url.toString(), { method:'POST', headers:{'Content-Type':'application/x-www-form-urlencoded'}, body:b.toString() });
+}
+
+// AUTOCOMPLETE
+var acTimer = null;
+document.addEventListener('DOMContentLoaded', function() {
+  var inp = document.getElementById('searchInput');
+  var box = document.getElementById('acBox');
+  var acIdx = -1, acItems = [];
+
+  inp.addEventListener('input', function() {
+    clearTimeout(acTimer);
+    var last = inp.value.split(/\s+/).pop();
+    if (last.length < 2) { box.classList.remove('open'); return; }
+    acTimer = setTimeout(async function() {
+      try {
+        var data = await apiFetch('/tags.json', { 'search[name_matches]': last+'*', 'search[order]':'count', limit:8 });
+        acItems = data || [];
+        acIdx = -1;
+        if (!acItems.length) { box.classList.remove('open'); return; }
+        box.innerHTML = acItems.map(function(t,i) {
+          return '<div class="ac-item" data-i="'+i+'"><span>'+t.name+'</span><span class="ac-count">'+t.post_count+'</span></div>';
+        }).join('');
+        box.classList.add('open');
+        box.querySelectorAll('.ac-item').forEach(function(el) {
+          el.addEventListener('mousedown', function(e) { e.preventDefault(); pickAc(acItems[+el.dataset.i].name); });
+        });
+      } catch(e) { box.classList.remove('open'); }
+    }, 250);
+  });
+
+  inp.addEventListener('keydown', function(e) {
+    if (!box.classList.contains('open')) return;
+    var items = box.querySelectorAll('.ac-item');
+    if (e.key === 'ArrowDown') { e.preventDefault(); acIdx = Math.min(acIdx+1, items.length-1); hilite(items); }
+    else if (e.key === 'ArrowUp') { e.preventDefault(); acIdx = Math.max(acIdx-1, -1); hilite(items); }
+    else if (e.key === 'Enter' && acIdx >= 0) { e.preventDefault(); pickAc(acItems[acIdx].name); }
+    else if (e.key === 'Escape') box.classList.remove('open');
+  });
+
+  function hilite(items) {
+    items.forEach(function(el,i) { el.classList.toggle('selected', i===acIdx); });
+    if (acIdx >= 0) items[acIdx].scrollIntoView({block:'nearest'});
+  }
+  function pickAc(name) {
+    var parts = inp.value.split(/\s+/);
+    parts[parts.length-1] = name;
+    inp.value = parts.join(' ') + ' ';
+    box.classList.remove('open'); inp.focus();
+  }
+  document.addEventListener('click', function(e) { if (!e.target.closest('.search-wrap')) box.classList.remove('open'); });
+});
+
+// PARSE
+function parsePost(p) {
+  var tags = p.tags || {}, score = p.score || {}, file = p.file || {};
+  return {
+    id: p.id,
+    file_url: file.url || null, file_ext: file.ext || '',
+    file_size: file.size || null, file_w: file.width || null, file_h: file.height || null,
+    preview_url: (p.preview && p.preview.url) || (p.sample && p.sample.url) || null,
+    sample_url:  (p.sample && p.sample.url) || file.url || null,
+    score: score.total || 0, fav_count: p.fav_count || 0, rating: p.rating || 's',
+    created_at: p.created_at || null,
+    tags_artist:    tags.artist    || [],
+    tags_copyright: tags.copyright || [],
+    tags_species:   tags.species   || [],
+    tags_general:   tags.general   || [],
+    tags_meta:      tags.meta      || [],
+    tags_all: (tags.artist||[]).concat(tags.copyright||[]).concat(tags.species||[]).concat(tags.general||[]),
+  };
+}
+function fmtSize(b) { if (!b) return ''; return b > 1048576 ? (b/1048576).toFixed(1)+'MB' : Math.round(b/1024)+'KB'; }
+function fmtDate(s) { if (!s) return ''; try { return new Date(s).toLocaleDateString('zh-CN'); } catch(e) { return s; } }
+
+// RENDER GRID
+function renderGrid(posts, id) {
+  var viewed = new Set(getHistory().map(function(p) { return p.id; }));
+  var el = document.getElementById(id);
+  if (!posts.length) { el.innerHTML = '<div class="empty-state">没有找到内容</div>'; return; }
+  el.innerHTML = posts.map(function(p) {
+    var isVid = p.file_ext === 'webm' || p.file_ext === 'mp4';
+    var rCls = p.rating === 's' ? 'b-s' : p.rating === 'q' ? 'b-q' : 'b-e';
+    return '<div class="post-card" onclick="openPost(' + p.id + ')">' +
+      (p.preview_url ? '<img class="post-thumb" src="' + p.preview_url + '" loading="lazy" alt="' + p.id + '">' : '<div class="post-ph">#' + p.id + '</div>') +
+      (viewed.has(p.id) ? '<div class="badge b-seen">seen</div>' : '') +
+      (isVid ? '<div class="badge b-vid">' + p.file_ext + '</div>' : '') +
+      '<div class="badge b-rating ' + rCls + '">' + p.rating + '</div>' +
+      '<div class="post-footer"><span class="post-score">+' + p.score + '</span><button class="fav-btn" onclick="favPost(event,' + p.id + ')">fav</button></div>' +
+      '</div>';
+  }).join('');
+  posts.forEach(function(p) { window._cache[p.id] = p; });
+}
+
+// SEARCH
+async function searchPosts(page) {
+  page = page || 1;
+  st.page = page;
+  var tags = document.getElementById('searchInput').value.trim();
+  var q = tags;
+  if (st.ratings.length === 1) {
+    q = q ? q + ' rating:' + st.ratings[0] : 'rating:' + st.ratings[0];
+  } else if (st.ratings.length >= 2) {
+    var rp = st.ratings.map(function(r) { return '~rating:' + r; }).join(' ');
+    q = q ? q + ' ' + rp : rp;
+  }
+  if (st.order) q = q ? q + ' order:' + st.order : 'order:' + st.order;
+  document.getElementById('browseGrid').innerHTML = '<div class="spinner"></div>';
+  document.getElementById('browsePagination').innerHTML = '';
+  try {
+    var data = await apiFetch('/posts.json', { tags: q, limit: cfg.pageSize, page: page });
+    var posts = (data.posts || []).map(parsePost);
+    renderGrid(posts, 'browseGrid');
+    renderPagination('browsePagination', page, posts.length >= cfg.pageSize, searchPosts);
+  } catch(e) {
+    document.getElementById('browseGrid').innerHTML = '<div class="empty-state">加载失败：' + e.message + '</div>';
+  }
+}
+
+// FILTERS
+function toggleRating(el, r) {
+  el.classList.toggle('active');
+  st.ratings = st.ratings.includes(r) ? st.ratings.filter(function(x) { return x !== r; }) : st.ratings.concat([r]);
+  searchPosts();
+}
+function toggleOrder(el, o) {
+  document.querySelectorAll('[data-order]').forEach(function(c) { c.classList.remove('active'); });
+  el.classList.add('active');
+  st.order = o;
+  searchPosts();
+}
+
+// FAVORITES
+async function loadFavorites(page) {
+  page = page || 1;
+  st.favPage = page;
+  document.getElementById('favGrid').innerHTML = '<div class="spinner"></div>';
+  try {
+    var data = await apiFetch('/favorites.json', { 'search[user_name]': sess.username, limit: cfg.pageSize, page: page });
+    var posts = (data.posts || []).map(parsePost);
+    posts.forEach(function(p) { if (p.tags_all.length) addPrefs(p.tags_all, 2); });
+    renderGrid(posts, 'favGrid');
+    renderPagination('favPagination', page, posts.length >= cfg.pageSize, loadFavorites);
+  } catch(e) {
+    document.getElementById('favGrid').innerHTML = '<div class="empty-state">加载失败：' + e.message + '</div>';
+  }
+}
+async function favPost(event, id) {
+  event.stopPropagation();
+  try { await apiPost('/favorites.json', { post_id: id }); showToast('已收藏'); }
+  catch(e) { showToast('收藏失败'); }
+}
+
+// VOTE
+async function votePost(id, score) {
+  try { await apiPost('/posts/' + id + '/votes.json', { score: score, no_unvote: false }); showToast(score > 0 ? '已点赞' : '已点踩'); }
+  catch(e) { showToast('投票失败'); }
+}
+
+// RECOMMEND
+// 权重规则：
+//   ×3  物种类（species）- 最能代表内容偏好
+//   ×2  行为/场景/内容特征 general tags（如 vore, pillow_humping 等）
+//   ×1  artist/copyright（正常积累）
+//   ×0.3 性别描述（male/female/intersex/ambiguous_gender 等）几乎不干扰
+//   ×0  噪音：技术meta、分辨率、格式
+
+var REC_NOISE = new Set([
+  'flash','sound','video','animated','hi_res','absurd_res','digital_media_(artwork)',
+  'conditional_dnp','tagme','4k','8k','high_resolution','traditional_media_(artwork)',
+  'low_res','signature','watermark','text','english_text','dialogue','speech_bubble'
+]);
+var REC_GENDER = new Set([
+  'male','female','intersex','ambiguous_gender','andromorph','gynomorph',
+  'maleherm','herm','fem','masculine','feminine','cuntboy','dickgirl',
+  'male/male','female/female','male/female','multiple_males','multiple_females',
+  'duo','trio','group','solo'
+]);
+// 行为/场景/内容特征关键词（前缀/后缀匹配）
+var REC_BEHAVIOR_WORDS = [
+  'vore','oral','anal','sex','cum','penetrat','moan','hump','lick','bite','suck',
+  'bondage','bdsm','restrain','tied','dominat','submiss','knot','feral',
+  'young','cub','inflation','weight_gain','muscle','fat','macro','micro',
+  'feet','paws','paw','smell','scent','sweat','armpit','belly','navel',
+  'predator','prey','unbirth','digestion','soft_vore','hard_vore',
+  'pillow','sleeping','dreaming','mind_control','hypno','petplay',
+  'watersport','scat','diaper','musk','impregnation','breeding','oviposition'
+];
+function isBehaviorTag(t) {
+  var lower = t.toLowerCase();
+  return REC_BEHAVIOR_WORDS.some(function(w) { return lower.indexOf(w) !== -1; });
+}
+
+function getTagWeight(tag, tagType) {
+  if (REC_NOISE.has(tag)) return 0;
+  if (REC_GENDER.has(tag)) return 0.3;
+  if (tagType === 'species') return 3;
+  if (isBehaviorTag(tag)) return 2;
+  return 1;
+}
+
+// 记录时按类型加权
+function addPrefsWeighted(post) {
+  var p = getPrefs();
+  function add(list, type) {
+    list.forEach(function(t) {
+      var w = getTagWeight(t, type);
+      if (w > 0) p[t] = (p[t] || 0) + w;
+    });
+  }
+  add(post.tags_species,   'species');
+  add(post.tags_general,   'general');
+  add(post.tags_artist,    'artist');
+  add(post.tags_copyright, 'copyright');
+  add(post.tags_meta,      'meta');
+  localStorage.setItem('e621prefs', JSON.stringify(p));
+}
+
+async function loadRecommend() {
+  var prefs = getPrefs();
+  var sorted = Object.entries(prefs)
+    .filter(function(kv) { return !REC_NOISE.has(kv[0]); })
+    .sort(function(a,b) { return b[1]-a[1]; });
+  if (!sorted.length) {
+    document.getElementById('prefBarWrap').innerHTML = '';
+    document.getElementById('recommendGrid').innerHTML = '<div class="empty-state">暂无偏好数据，先浏览或收藏一些图片</div>';
+    return;
+  }
+  var max = sorted[0][1];
+  var bars = sorted.slice(0,8).map(function(kv) {
+    return '<div class="pref-row"><div class="pref-name">'+kv[0]+'</div><div class="pref-track"><div class="pref-fill" style="width:'+Math.round(kv[1]/max*100)+'%"></div></div><div class="pref-count">'+kv[1]+'</div></div>';
+  }).join('');
+  document.getElementById('prefBarWrap').innerHTML = '<div class="pref-bar-wrap"><div class="pref-bar-title">Tag 偏好（已加权）</div>' + bars + '</div>';
+  var fresh = cfg.freshRatio / 100;
+  var topN = Math.max(3, Math.round((1-fresh)*5));
+  var hot = sorted.slice(0,topN).map(function(kv) { return kv[0]; });
+  var pool = sorted.slice(topN);
+  var newTags = [];
+  var cnt = Math.round(fresh*3);
+  for (var i=0; i<cnt && pool.length; i++) newTags.push(pool[Math.floor(Math.random()*pool.length)][0]);
+  var final = [];
+  hot.concat(newTags).forEach(function(t) { if (!final.includes(t)) final.push(t); });
+  final = final.slice(0,6);
+  document.getElementById('recSub').textContent = '基于 ' + getHistory().length + ' 条历史 + 收藏 / ' + final.slice(0,3).join(', ') + '...';
+  document.getElementById('recommendGrid').innerHTML = '<div class="spinner"></div>';
+  try {
+    var data = await apiFetch('/posts.json', { tags: final.join(' ') + ' order:random', limit: cfg.pageSize });
+    renderGrid((data.posts || []).map(parsePost), 'recommendGrid');
+  } catch(e) {
+    document.getElementById('recommendGrid').innerHTML = '<div class="empty-state">加载失败：' + e.message + '</div>';
+  }
+}
+
+// HISTORY
+function loadHistoryPage() {
+  var h = getHistory();
+  if (!h.length) { document.getElementById('historyGrid').innerHTML = '<div class="empty-state">暂无浏览历史</div>'; return; }
+  document.getElementById('historyGrid').innerHTML = h.map(function(p) {
+    return '<div class="post-card" onclick="openPost(' + p.id + ')">' +
+      (p.thumb ? '<img class="post-thumb" src="' + p.thumb + '" loading="lazy" alt="' + p.id + '">' : '<div class="post-ph">#' + p.id + '</div>') +
+      '<div class="post-footer"><span class="post-score">+' + (p.score||0) + '</span><button class="fav-btn" onclick="favPost(event,' + p.id + ')">fav</button></div>' +
+      '</div>';
+  }).join('');
+}
+
+// MODAL
+function toggleTagGroup(id) {
+  var el = document.getElementById(id);
+  if (el) el.classList.toggle('collapsed');
+}
+async function openPost(postId) {
+  document.getElementById('modalOverlay').classList.add('open');
+  document.getElementById('modalMedia').innerHTML = '<div class="spinner" style="margin:30px auto"></div>';
+  document.getElementById('modalInfo').textContent = '加载中...';
+  document.getElementById('modalActions').innerHTML = '';
+  document.getElementById('modalTags').innerHTML = '';
+  try {
+    var post = window._cache[postId];
+    if (!post) {
+      var d = await apiFetch('/posts/' + postId + '.json');
+      post = parsePost(d.post || d);
+      window._cache[postId] = post;
+    }
+    addHistory(post);
+    var isVid = post.file_ext === 'webm' || post.file_ext === 'mp4';
+    var src = post.sample_url || post.file_url;
+    var mediaHtml = '';
+    if (isVid && post.file_url) {
+      mediaHtml = '<video class="modal-video" controls autoplay loop><source src="' + post.file_url + '" type="video/' + post.file_ext + '"></video>';
+    } else if (src) {
+      mediaHtml = '<img class="modal-img" src="' + src + '" alt="' + postId + '" onclick="window.open(\'' + (post.file_url||src) + '\',\'_blank\')" onerror="this.src=\'' + (post.preview_url||'') + '\'">';
+    } else {
+      mediaHtml = '<div style="padding:40px;color:var(--text3);font-size:12px">无法加载</div>';
+    }
+    document.getElementById('modalMedia').innerHTML = mediaHtml;
+
+    var info = ['#'+postId, 'score:'+post.score, 'fav:'+post.fav_count, 'rating:'+post.rating];
+    if (post.created_at) info.push('上传:'+fmtDate(post.created_at));
+    if (post.file_size)  info.push('大小:'+fmtSize(post.file_size));
+    if (post.file_w && post.file_h) info.push(post.file_w+'x'+post.file_h);
+    document.getElementById('modalInfo').textContent = info.join('  ');
+
+    var actHtml = '<button class="action-btn" onclick="votePost(' + postId + ',1)">点赞</button>' +
+      '<button class="action-btn" onclick="votePost(' + postId + ',-1)">点踩</button>' +
+      '<button class="action-btn" onclick="favPost(event,' + postId + ')">收藏</button>' +
+      (post.file_url ? '<button class="action-btn" onclick="window.open(\''+post.file_url+'\',\'_blank\')">原图</button>' : '') +
+      '<button class="action-btn" onclick="window.open(\'https://e621.net/posts/'+postId+'\',\'_blank\')">原帖</button>';
+    document.getElementById('modalActions').innerHTML = actHtml;
+
+    var groups = [
+      { title:'Artist',    list:post.tags_artist,    cls:'artist' },
+      { title:'Copyright', list:post.tags_copyright, cls:'copyright' },
+      { title:'Species',   list:post.tags_species,   cls:'species' },
+      { title:'General',   list:post.tags_general,   cls:'general' },
+      { title:'Meta',      list:post.tags_meta,      cls:'meta' },
+    ].filter(function(g) { return g.list.length > 0; });
+
+    document.getElementById('modalTags').innerHTML = groups.map(function(g) {
+      var collapsed = (g.cls === 'general' || g.cls === 'meta') ? ' collapsed' : '';
+      var tagItems = g.list.map(function(t) {
+        return '<span class="tag ' + g.cls + '" onclick="searchByTag(\'' + t.replace(/\\/g,'\\\\').replace(/'/g,"\\'") + '\')">' + t + '</span>';
+      }).join('');
+      return '<div class="tag-group' + collapsed + '" id="tg-' + g.cls + '">' +
+        '<div class="tag-group-header" onclick="toggleTagGroup(\'tg-' + g.cls + '\')">' +
+        '<span>' + g.title + ' <span style="opacity:0.4;font-size:10px">(' + g.list.length + ')</span></span>' +
+        '<span class="tag-group-arrow">&#x25BE;</span>' +
+        '</div>' +
+        '<div class="tag-list">' + tagItems + '</div>' +
+        '</div>';
+    }).join('');
+  } catch(e) {
+    document.getElementById('modalMedia').innerHTML = '<div style="padding:30px;color:var(--danger);font-size:12px">加载失败：' + e.message + '</div>';
+    document.getElementById('modalInfo').textContent = '';
+  }
+}
+function searchByTag(tag) { closeModal(); switchTab('browse'); document.getElementById('searchInput').value = tag; searchPosts(); }
+function closeModal() { document.getElementById('modalOverlay').classList.remove('open'); }
+function closeModalOutside(e) { if (e.target === document.getElementById('modalOverlay')) closeModal(); }
+
+// BACK BUTTON
+var _navHistory = [];
+function pushNav(tab) {
+  if (_navHistory[_navHistory.length-1] !== tab) _navHistory.push(tab);
+  updateBackBtn();
+}
+function goBack() {
+  _navHistory.pop();
+  var prev = _navHistory[_navHistory.length-1];
+  if (prev) { _navHistory.pop(); switchTab(prev); }
+  else switchTab('browse');
+}
+function updateBackBtn() {
+  var btn = document.getElementById('backBtn');
+  if (_navHistory.length > 1) btn.classList.add('visible');
+  else btn.classList.remove('visible');
+}
+
+// PAGINATION
+var _pageCb = null;
+function renderPagination(id, cur, hasNext, fn) {
+  _pageCb = fn;
+  var el = document.getElementById(id);
+  var start = Math.max(1, cur-2);
+  var end = cur + (hasNext ? 2 : 0);
+  var html = '<button class="page-btn"' + (cur<=1?' disabled':' onclick="_pageCb('+(cur-1)+')"') + '>上一页</button>';
+  if (start > 1) {
+    html += '<button class="page-btn" onclick="_pageCb(1)">1</button>';
+    if (start > 2) html += '<span class="page-ell">…</span>';
+  }
+  for (var p=start; p<=end; p++) {
+    html += '<button class="page-btn' + (p===cur?' current':'') + '"' + (p!==cur?' onclick="_pageCb('+p+')"':'') + '>' + p + '</button>';
+  }
+  html += '<button class="page-btn"' + (!hasNext?' disabled':' onclick="_pageCb('+(cur+1)+')"') + '>下一页</button>';
+  el.innerHTML = html;
+}
+
+// TABS
+function switchTab(tab) {
+  st.tab = tab;
+  ['browse','recommend','favorites','history','settings'].forEach(function(t) {
+    document.getElementById('page-'+t).style.display = t===tab ? 'block' : 'none';
+    document.getElementById('tab-'+t).classList.toggle('active', t===tab);
+  });
+  pushNav(tab);
+  if (tab === 'recommend') loadRecommend();
+  if (tab === 'favorites') loadFavorites();
+  if (tab === 'history')   loadHistoryPage();
+  if (tab === 'settings')  updateStats();
+}
+
+// TOAST
+function showToast(msg) {
+  var el = document.getElementById('toast');
+  el.textContent = msg; el.classList.add('show');
+  clearTimeout(window._tt); window._tt = setTimeout(function() { el.classList.remove('show'); }, 2000);
+}
+
+// KEYBOARD
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') closeModal();
+  if (e.key === 'Enter' && document.activeElement && document.activeElement.id === 'loginKey') doLogin();
+});
+
+tryAutoLogin();
+</script>
+
+</body>
+</html>
